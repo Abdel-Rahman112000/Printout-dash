@@ -8,55 +8,90 @@ import { Controller, useForm } from 'react-hook-form'
 import { FilePond } from 'react-filepond'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-
 import axios from 'axios'
-
-import { convertLength } from '@mui/material/styles/cssUtils'
 
 import { getClientAuthHeaders } from '@/utils/headers/authClient'
 import { api } from '@/utils/api'
-import type { Client } from '@/types/api/common/User'
+import type { AllOptionsType } from '@/types/apps/allOptionsType'
+import type { PaperType } from '@/types/api/common/PaperType'
+import type { Product } from '@/types/api/common/Product'
 
 export const OfferSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  price: z.string().min(1, 'Price is required'),
-  height: z.string().optional(),
-  width: z.string().optional(),
+  client_id: z.string().min(1, 'client_id is required'),
+  type_id: z.number().min(1, 'type_id is required'),
+  category_id: z.number(),
+  product_id: z.number().min(1, 'product_id is required'),
+  paper_id: z.number().min(1, 'product_id is required'),
+  note: z.string().optional(),
+  file: z.array(z.instanceof(File)).optional(),
   description: z.string().optional(),
-  quantity: z.string().optional(),
-  discounted: z.string().optional(),
-  file: z.array(z.instanceof(File)).min(1)
+  quantity: z.string().min(1, 'quantity is required'),
+  processing_days: z.string().min(1, 'processing_days is required'),
+  discounted_price: z.string().min(1, 'discounted_price is required')
 })
 
 export type OfferSchemaType = z.infer<typeof OfferSchema>
 
 function ContentOffer() {
   const [searchClient, setSearchClient] = useState('')
-  const [clients, setClients] = useState<Client[]>([])
-
-  const top100Films = [
-    { name: 'The Shawshank Redemption', id: 1994 },
-    { name: 'The Godfather', id: 1972 },
-    { name: 'The Godfather: Part II', id: 1974 },
-    { name: 'The Dark Knight', id: 2008 }
-  ]
+  const [allOptions, setAllOptions] = useState<AllOptionsType>()
+  const [paperData, setPaperData] = useState<PaperType>()
+  const [productInfo, setProductInfo] = useState<Product>()
 
   const {
     control,
     register,
     handleSubmit,
+    watch,
     formState: { errors }
   } = useForm<OfferSchemaType>({
     resolver: zodResolver(OfferSchema)
   })
 
+  const { type_id, category_id, paper_id, product_id } = watch()
+  const paperInfo = paperData?.size.find(index => index.id == paper_id)
+
+  const getProductInfo = async () => {
+    const headers = await getClientAuthHeaders()
+
+    axios
+      .get<{ data: Product }>(api`dashboard/product/${product_id}`, {
+        headers
+      })
+      .then(res => {
+        setProductInfo(res.data.data)
+      })
+      .catch(() => {
+        // toast.error('Error in delete vendor')
+      })
+  }
+
+  const getPaperSize = async () => {
+    const headers = await getClientAuthHeaders()
+
+    axios
+      .get<{ data: PaperType }>(api`dashboard/paper`, {
+        headers
+      })
+      .then(res => {
+        setPaperData(res.data.data)
+      })
+      .catch(() => {
+        // toast.error('Error in delete vendor')
+      })
+  }
+
   const getAllOptions = async () => {
     const headers = await getClientAuthHeaders()
 
     axios
-      .get<{ data: Client[] }>(api`dashboard/clients`, { headers, params: { search_client: searchClient } })
+      .get<{ data: AllOptionsType }>(api`dashboard/order/lookups`, {
+        headers,
+        params: { search_client: searchClient, type_id: type_id, category_id: category_id }
+      })
       .then(res => {
-        setClients(res.data.data)
+        setAllOptions(res.data.data)
       })
       .catch(() => {
         // toast.error('Error in delete vendor')
@@ -69,7 +104,13 @@ function ContentOffer() {
 
   useEffect(() => {
     getAllOptions()
-  }, [searchClient])
+  }, [searchClient, type_id, category_id])
+  useEffect(() => {
+    getPaperSize()
+  }, [])
+  useEffect(() => {
+    if (product_id) getProductInfo()
+  }, [product_id])
 
   return (
     <>
@@ -101,6 +142,7 @@ function ContentOffer() {
       {/* offer content */}
       <Grid container sx={{ mt: 4 }} spacing={6}>
         <Grid item xs={8}>
+          {/* First Form */}
           <Box sx={{ backgroundColor: '#fff', p: 4 }}>
             <Typography variant='body1' sx={{ my: 5 }}></Typography>
             <Grid container spacing={3}>
@@ -119,118 +161,155 @@ function ContentOffer() {
                   size='small'
                   fullWidth
                   disablePortal
-                  options={clients}
+                  options={allOptions?.clients.data || []}
                   inputValue={searchClient}
                   onInputChange={(event, newInputValue) => {
                     setSearchClient(newInputValue)
                   }}
                   getOptionLabel={option => `${option.user_name}`}
-                  renderInput={params => <TextField {...params} label='Clients' />}
+                  renderInput={params => <TextField {...register('client_id')} {...params} label='Clients' />}
                 />
+                <Typography color='error'>{errors.client_id?.message}</Typography>
               </Grid>
             </Grid>
           </Box>
+          {/* Second Form */}
           <Box sx={{ backgroundColor: '#fff', p: 4, mt: 5 }}>
             <Typography variant='body1' sx={{ my: 5 }}>
               Order type
             </Typography>
             <Grid container spacing={3}>
+              {/* Types */}
               <Grid item xs={6}>
-                <TextField select fullWidth size='small' label='Type'>
-                  <MenuItem>Ten</MenuItem>
-                  <MenuItem>Twenty</MenuItem>
-                  <MenuItem>Thirty</MenuItem>
-                </TextField>
+                <Controller
+                  control={control}
+                  name='type_id'
+                  render={({ field }) => (
+                    <TextField {...field} size='small' label='Types' select fullWidth>
+                      {allOptions?.types?.map(type => (
+                        <MenuItem key={type.id} value={type.id}>
+                          {type.name}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  )}
+                />
+                <Typography color='error'>{errors.type_id?.message}</Typography>
               </Grid>
+              {/* Category */}
               <Grid item xs={6}>
-                <TextField select fullWidth size='small' label='Category'>
-                  <MenuItem>Ten</MenuItem>
-                  <MenuItem>Twenty</MenuItem>
-                  <MenuItem>Thirty</MenuItem>
-                </TextField>
+                <Controller
+                  control={control}
+                  name='category_id'
+                  render={({ field }) => (
+                    <TextField {...field} size='small' label='Categories' select fullWidth disabled={!type_id}>
+                      {allOptions?.categories.data?.map(cat => (
+                        <MenuItem key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  )}
+                />
+                <Typography color='error'>{errors.category_id?.message}</Typography>
               </Grid>
+              {/* Products */}
               <Grid item xs={12}>
-                <TextField select fullWidth size='small' label='Product '>
-                  <MenuItem>Ten</MenuItem>
-                  <MenuItem>Twenty</MenuItem>
-                  <MenuItem>Thirty</MenuItem>
-                </TextField>
+                <Controller
+                  control={control}
+                  name='product_id'
+                  render={({ field }) => (
+                    <TextField {...field} size='small' label='Products' select fullWidth disabled={!category_id}>
+                      {allOptions?.products.data?.map(product => (
+                        <MenuItem key={product.id} value={product.id}>
+                          {product.name}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  )}
+                />
+                <Typography color='error'>{errors.product_id?.message}</Typography>
               </Grid>
             </Grid>
           </Box>
-          <Box sx={{ backgroundColor: '#fff', p: 4, mt: 5 }}>
-            <Typography variant='body1' sx={{ my: 5 }}>
-              Customize
-            </Typography>
-            <Grid container spacing={3}>
-              <Grid item xs={6}>
-                <TextField select fullWidth size='small' label='Paper Size'>
-                  <MenuItem>Ten</MenuItem>
-                  <MenuItem>Twenty</MenuItem>
-                  <MenuItem>Thirty</MenuItem>
-                </TextField>
+
+          {/* Third Form*/}
+          {type_id == 1 ? (
+            <Box sx={{ backgroundColor: '#fff', p: 4, mt: 5 }}>
+              <Typography variant='body1' sx={{ my: 5 }}>
+                Customize
+              </Typography>
+              <Grid container spacing={3}>
+                <Grid item xs={6}>
+                  <Controller
+                    control={control}
+                    name='paper_id'
+                    render={({ field }) => (
+                      <TextField {...field} size='small' label='Paper' select fullWidth>
+                        {paperData?.size?.map(paper => (
+                          <MenuItem key={paper.id} value={paper.id}>
+                            {paper.name}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    )}
+                  />
+                  <Typography color='error'>{errors.paper_id?.message}</Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <TextField label='Height' disabled value={paperInfo?.size.height || ''} fullWidth size='small' />
+                </Grid>
+                <Grid item xs={6}>
+                  <TextField label='Width' disabled value={paperInfo?.size.width || ''} fullWidth size='small' />
+                </Grid>
+                <Grid item xs={6}>
+                  <TextField label='Bleed' disabled value={paperInfo?.size.width || ''} fullWidth size='small' />
+                </Grid>
+                {/* {productInfo?.customizations?.map((custom, index) => (
+                  <Grid key={custom.id} item xs={6}>
+                    <Controller
+                      control={control}
+                      name={custom.choices[index].name.toString()}
+                      render={({ field }) => (
+                        <TextField {...field} size='small' label={custom.name} select fullWidth>
+                          {custom?.choices?.map(item => (
+                            <MenuItem key={item.id} value={item.id}>
+                              {item.name}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      )}
+                    />
+                  </Grid>
+                ))} */}
+
+                <Grid item xs={12}>
+                  <TextField
+                    name='note'
+                    fullWidth
+                    size='small'
+                    label='Note'
+                    placeholder='Write a note'
+                    multiline
+                    rows={6}
+                  />
+                </Grid>
               </Grid>
-              <Grid item xs={6}>
-                <TextField select fullWidth size='small' label='Customization 1'>
-                  <MenuItem>Ten</MenuItem>
-                  <MenuItem>Twenty</MenuItem>
-                  <MenuItem>Thirty</MenuItem>
-                </TextField>
+            </Box>
+          ) : (
+            <Box sx={{ backgroundColor: '#fff', p: 4, mt: 5 }}>
+              <Typography variant='body1' sx={{ my: 5 }}>
+                Customize
+              </Typography>
+              <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <TextField fullWidth size='small' label='Note' placeholder='Write a note' multiline rows={6} />
+                </Grid>
               </Grid>
-              <Grid item xs={6}>
-                <TextField select fullWidth size='small' label='Customization 2 '>
-                  <MenuItem>Ten</MenuItem>
-                  <MenuItem>Twenty</MenuItem>
-                  <MenuItem>Thirty</MenuItem>
-                </TextField>
-              </Grid>
-              <Grid item xs={6}>
-                <TextField select fullWidth size='small' label='Customization 3 '>
-                  <MenuItem>Ten</MenuItem>
-                  <MenuItem>Twenty</MenuItem>
-                  <MenuItem>Thirty</MenuItem>
-                </TextField>
-              </Grid>
-              <Grid item xs={4}>
-                <TextField
-                  {...register('name')}
-                  fullWidth
-                  size='small'
-                  label='Height'
-                  placeholder='Business Card Printing'
-                />
-              </Grid>
-              <Grid item xs={4}>
-                <TextField
-                  {...register('name')}
-                  fullWidth
-                  size='small'
-                  label='Width'
-                  placeholder='Business Card Printing'
-                />
-              </Grid>
-              <Grid item xs={4}>
-                <TextField
-                  {...register('name')}
-                  fullWidth
-                  size='small'
-                  label='Bleed'
-                  placeholder='Business Card Printing'
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  {...register('name')}
-                  fullWidth
-                  size='small'
-                  label='Note'
-                  placeholder='Write a note'
-                  multiline
-                  rows={6}
-                />
-              </Grid>
-            </Grid>
-          </Box>
+            </Box>
+          )}
+
+          {/* Upload Image */}
           <Box sx={{ backgroundColor: '#fff', p: 4, mt: 5 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', my: 4 }}>
               <Typography variant='body1'>Product Preview Image</Typography>
@@ -254,10 +333,14 @@ function ContentOffer() {
               )}
             />
           </Box>
+
+          {/* Add Product */}
           <Button variant='contained' sx={{ mt: 6 }}>
             Add Product
           </Button>
         </Grid>
+
+        {/* Fourth Form */}
         <Grid item xs={4}>
           <Box sx={{ backgroundColor: '#fff', p: 4 }}>
             <Typography variant='body1' sx={{ my: 5 }}>
@@ -266,18 +349,24 @@ function ContentOffer() {
             <Grid container spacing={3}>
               <Grid item xs={12}>
                 <TextField {...register('quantity')} fullWidth size='small' label='Quantity' />
+                <Typography color='error'>{errors.quantity?.message}</Typography>
               </Grid>
               <Grid item xs={12}>
-                <TextField {...register('price')} fullWidth size='small' label='Processing Days' />
-                <Typography color='error'>{errors.price?.message}</Typography>
+                <TextField {...register('processing_days')} fullWidth size='small' label='Processing Days' />
+                <Typography color='error'>{errors.processing_days?.message}</Typography>
               </Grid>
               <Grid item xs={12}>
-                <TextField {...register('price')} fullWidth size='small' label='Base Price' />
-                <Typography color='error'>{errors.price?.message}</Typography>
+                <TextField
+                  value={productInfo?.product_price?.price || ''}
+                  disabled
+                  fullWidth
+                  size='small'
+                  label='Base Price'
+                />
               </Grid>
               <Grid item xs={12}>
-                <TextField {...register('price')} fullWidth size='small' label='Discounted Price' />
-                <Typography color='error'>{errors.price?.message}</Typography>
+                <TextField {...register('discounted_price')} fullWidth size='small' label='Discounted Price' />
+                <Typography color='error'>{errors.discounted_price?.message}</Typography>
               </Grid>
             </Grid>
           </Box>
