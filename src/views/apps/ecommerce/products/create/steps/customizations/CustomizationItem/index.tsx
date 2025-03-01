@@ -99,7 +99,7 @@ function CustomizationItem({
                       {errors.customizations?.[index]?.choices?.[choiceIndex]?.name?.message}
                     </ErrorTypography>
                   </Grid>
-                  <Grid xs={12} md={3}>
+                  <Grid xs={12} md={3} sx={{ mt: 5 }}>
                     <FormControl fullWidth>
                       <InputLabel id='demo-simple-select-label'>Price type</InputLabel>
                       <Select

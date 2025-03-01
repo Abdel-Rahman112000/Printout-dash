@@ -21,6 +21,7 @@ export interface Product {
   scaling: number
   size: number
   color: number
+  description: string
 }
 
 export interface Category {

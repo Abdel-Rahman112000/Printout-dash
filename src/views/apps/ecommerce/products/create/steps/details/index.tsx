@@ -82,8 +82,6 @@ function ProductDetailsForm({ categories, handleNext }: Props) {
 
   const { vendors } = useContext(CreateProductCxt)
 
-  const { enqueueSnackbar } = useSnackbar()
-
   const schema = useMemo(() => {
     return z.object({
       name: z.string().min(1),
@@ -109,21 +107,38 @@ function ProductDetailsForm({ categories, handleNext }: Props) {
     control,
     watch,
     reset,
-    setValue
+    getValues
   } = useForm<SchemaType>({
-    resolver: zodResolver(schema),
-    defaultValues: product
-      ? {
-          name: product.name,
-          brand_id: product.brand_id,
-          type_id: product.type_id ? `${product.type_id}` : undefined,
-          category_id: product.category_id ? `${product.category_id}` : undefined,
-          size: product?.size == 1 ? true : false,
-          color: product?.color == 1 ? true : false,
-          scaling: product?.scaling == 1 ? true : false
-        }
-      : undefined
+    resolver: zodResolver(schema)
+    // defaultValues: product
+    //   ? {
+    //       name: product.name,
+    //       brand_id: product.brand_id,
+    //       type_id: product.type_id ? `${product.type_id}` : undefined,
+    //       category_id: product.category_id ? `${product.category_id}` : undefined,
+    //       size: product?.size == 1 ? true : false,
+    //       color: product?.color == 1 ? true : false,
+    //       scaling: product?.scaling == 1 ? true : false
+    //     }
+    //   : undefined
   })
+
+  useEffect(() => {
+    if (productId && product) {
+      reset({
+        name: product.name,
+        brand_id: product.brand_id,
+        type_id: product.type_id ? `${product.type_id}` : undefined,
+        category_id: product.category_id ? `${product.category_id}` : undefined,
+        size: product?.size == 1 ? true : false,
+        color: product?.color == 1 ? true : false,
+        scaling: product?.scaling == 1 ? true : false,
+        description: product?.description
+      })
+    } else {
+      reset({})
+    }
+  }, [productId])
 
   // type watcher
   const watchedType = watch('type_id')
@@ -211,7 +226,7 @@ function ProductDetailsForm({ categories, handleNext }: Props) {
         </GridItem>
 
         {/* category */}
-        <GridItem>
+        {/* <GridItem>
           <AddLabelToEl label='Product Category'>
             <Select {...register('category_id')} placeholder='Select a Category'>
               {Array.isArray(vendors) &&
@@ -222,11 +237,11 @@ function ProductDetailsForm({ categories, handleNext }: Props) {
                 ))}
             </Select>
           </AddLabelToEl>
-        </GridItem>
+        </GridItem> */}
 
         {/* brand */}
         {+watchedType === 2 && (
-          <Grid xs={12} p={4}>
+          <Grid xs={6} p={4}>
             <AddLabelToEl label='Product Brand'>
               <Select {...register('brand_id')} placeholder='Select a Brand'>
                 {Array.isArray(vendors) &&
