@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { Autocomplete, Box, Button, Grid, MenuItem, Select, Stack, TextField, Typography } from '@mui/material'
 import { Controller, useForm } from 'react-hook-form'
 import { FilePond } from 'react-filepond'
-import { z } from 'zod'
+import type { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
 
@@ -15,23 +15,8 @@ import { api } from '@/utils/api'
 import type { AllOptionsType } from '@/types/apps/allOptionsType'
 import type { PaperType } from '@/types/api/common/PaperType'
 import type { Product } from '@/types/api/common/Product'
-
-export const OfferSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  client_id: z.string().min(1, 'client_id is required'),
-  type_id: z.number().min(1, 'type_id is required'),
-  category_id: z.number(),
-  product_id: z.number().min(1, 'product_id is required'),
-  paper_id: z.number().min(1, 'product_id is required'),
-  note: z.string().optional(),
-  file: z.array(z.instanceof(File)).optional(),
-  description: z.string().optional(),
-  quantity: z.string().min(1, 'quantity is required'),
-  processing_days: z.string().min(1, 'processing_days is required'),
-  discounted_price: z.string().min(1, 'discounted_price is required')
-})
-
-export type OfferSchemaType = z.infer<typeof OfferSchema>
+import { OfferSchema, type OfferSchemaType } from './OfferSchema'
+import OrderCart from './OrderCart'
 
 function ContentOffer() {
   const [searchClient, setSearchClient] = useState('')
@@ -105,9 +90,11 @@ function ContentOffer() {
   useEffect(() => {
     getAllOptions()
   }, [searchClient, type_id, category_id])
+
   useEffect(() => {
     getPaperSize()
   }, [])
+
   useEffect(() => {
     if (product_id) getProductInfo()
   }, [product_id])
@@ -117,25 +104,25 @@ function ContentOffer() {
       {/* offer content */}
 
       <Stack flexDirection={'row'} justifyContent={'space-between'} alignItems={'center'}>
-        <Box sx={{ width: { md: '70%', xs: '100%' } }}>
+        <Box sx={{ width: { md: '60%', xs: '100%' } }}>
           <Typography variant='h4'>Make an offer</Typography>
           <Typography variant='body1'>Make an offer if it’</Typography>
         </Box>
         <Box
           sx={{
-            width: { md: '30%', xs: '100%' },
+            width: { md: '40%', xs: '100%' },
             display: 'flex',
             justifyContent: 'end'
           }}
         >
           <Button variant='contained' sx={{ mr: 2 }} color='secondary'>
-            Discard
+            Add as order
           </Button>
           <Button variant='outlined' sx={{ mr: 2 }} color='primary'>
-            Save Draft
+            Discard
           </Button>
           <Button variant='contained' sx={{ mr: 2 }} color='primary' onClick={onSubmit}>
-            Send Offer
+            Notify User
           </Button>
         </Box>
       </Stack>
@@ -234,7 +221,7 @@ function ContentOffer() {
           </Box>
 
           {/* Third Form*/}
-          {type_id == 1 ? (
+          {productInfo?.customizations?.length ? (
             <Box sx={{ backgroundColor: '#fff', p: 4, mt: 5 }}>
               <Typography variant='body1' sx={{ my: 5 }}>
                 Customize
@@ -262,9 +249,7 @@ function ContentOffer() {
                 <Grid item xs={6}>
                   <TextField label='Width' disabled value={paperInfo?.size.width || ''} fullWidth size='small' />
                 </Grid>
-                <Grid item xs={6}>
-                  <TextField label='Bleed' disabled value={paperInfo?.size.width || ''} fullWidth size='small' />
-                </Grid>
+
                 {/* {productInfo?.customizations?.map((custom, index) => (
                   <Grid key={custom.id} item xs={6}>
                     <Controller
@@ -342,34 +327,43 @@ function ContentOffer() {
 
         {/* Fourth Form */}
         <Grid item xs={4}>
-          <Box sx={{ backgroundColor: '#fff', p: 4 }}>
-            <Typography variant='body1' sx={{ my: 5 }}>
-              Pricing
-            </Typography>
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
-                <TextField {...register('quantity')} fullWidth size='small' label='Quantity' />
-                <Typography color='error'>{errors.quantity?.message}</Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <TextField {...register('processing_days')} fullWidth size='small' label='Processing Days' />
-                <Typography color='error'>{errors.processing_days?.message}</Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  value={productInfo?.product_price?.price || ''}
-                  disabled
-                  fullWidth
-                  size='small'
-                  label='Base Price'
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField {...register('discounted_price')} fullWidth size='small' label='Discounted Price' />
-                <Typography color='error'>{errors.discounted_price?.message}</Typography>
-              </Grid>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Box sx={{ backgroundColor: '#fff', p: 4 }}>
+                <Typography variant='body1' sx={{ my: 5 }}>
+                  Pricing
+                </Typography>
+                <Grid container spacing={3}>
+                  <Grid item xs={12}>
+                    <TextField {...register('quantity')} fullWidth size='small' label='Quantity' />
+                    <Typography color='error'>{errors.quantity?.message}</Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField {...register('processing_days')} fullWidth size='small' label='Processing Days' />
+                    <Typography color='error'>{errors.processing_days?.message}</Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      value={productInfo?.product_price?.price || ''}
+                      disabled
+                      fullWidth
+                      size='small'
+                      label='Base Price'
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField {...register('discounted_price')} fullWidth size='small' label='Discounted Price' />
+                    <Typography color='error'>{errors.discounted_price?.message}</Typography>
+                  </Grid>
+                </Grid>
+              </Box>
             </Grid>
-          </Box>
+            <Grid item xs={12}>
+              <Box sx={{ backgroundColor: '#fff', p: 4 }}>
+                <OrderCart />
+              </Box>
+            </Grid>
+          </Grid>
         </Grid>
       </Grid>
     </>
