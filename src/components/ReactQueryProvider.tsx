@@ -5,7 +5,13 @@ import { SnackbarProvider } from 'notistack'
 
 import type { ChildrenType } from '@/@core/types'
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false
+    }
+  }
+})
 
 function ReactQueryClientProvider({ children }: ChildrenType) {
   return (
