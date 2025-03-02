@@ -107,7 +107,7 @@ function ProductPricingForm({ handleNext }: Props) {
       )
 
       refetch()
-      toast.success('Product added successfully')
+      productId ? toast.success('Product Edit successfully') : toast.success('Product added successfully')
       router.push(`/en/apps/ecommerce/products/list`)
       handleNext()
     } catch (error: any) {

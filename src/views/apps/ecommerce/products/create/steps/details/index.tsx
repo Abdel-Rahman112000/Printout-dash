@@ -106,21 +106,9 @@ function ProductDetailsForm({ categories, handleNext }: Props) {
     register,
     control,
     watch,
-    reset,
-    getValues
+    reset
   } = useForm<SchemaType>({
     resolver: zodResolver(schema)
-    // defaultValues: product
-    //   ? {
-    //       name: product.name,
-    //       brand_id: product.brand_id,
-    //       type_id: product.type_id ? `${product.type_id}` : undefined,
-    //       category_id: product.category_id ? `${product.category_id}` : undefined,
-    //       size: product?.size == 1 ? true : false,
-    //       color: product?.color == 1 ? true : false,
-    //       scaling: product?.scaling == 1 ? true : false
-    //     }
-    //   : undefined
   })
 
   useEffect(() => {
@@ -165,7 +153,7 @@ function ProductDetailsForm({ categories, handleNext }: Props) {
         const headers = await getClientAuthSession()
 
         const res = await (product?.id
-          ? axios.put<{
+          ? axios.post<{
               status: boolean
               message: string
               data: Product
@@ -179,6 +167,7 @@ function ProductDetailsForm({ categories, handleNext }: Props) {
         setProductId(res.data.data.id)
         refetch()
         handleNext()
+        product?.id ? toast.success('Success Edit') : toast.success('Success Add')
       } catch (error: any) {
         console.log('errorerror', error)
         const errorMessage = `${error?.status ?? '500'} - ${error?.response?.data?.message ?? 'Unexpected error'}`
@@ -320,6 +309,7 @@ function ProductDetailsForm({ categories, handleNext }: Props) {
                   }}
                   allowMultiple={true}
                   acceptedFileTypes={['image/*']}
+                  
                 />
               )}
             />
