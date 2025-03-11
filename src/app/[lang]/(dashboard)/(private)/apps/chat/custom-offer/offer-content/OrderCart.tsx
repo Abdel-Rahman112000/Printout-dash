@@ -13,7 +13,16 @@ import {
   Typography
 } from '@mui/material'
 
-function OrderCart() {
+import type { OrderCartType } from '@/types/api/common/OrderCart'
+
+function OrderCart({ allOrders }: { allOrders: OrderCartType[] }) {
+  if (!allOrders.length)
+    return (
+      <>
+        <Typography variant='h6'>No have Orders</Typography>
+      </>
+    )
+
   return (
     <Stack>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -38,21 +47,27 @@ function OrderCart() {
               </TableRow>
             </TableHead>
             <TableBody>
-              <TableRow>
-                <TableCell>
-                  <Checkbox />
-                </TableCell>
-                <TableCell>
-                  <Box sx={{ display: 'flex' }}>
-                    <img src='/images/illustrations/characters/9.png' alt='Google play' className='bs-[40px]' />
-                    <Box sx={{ ml: 3 }}>
-                      <Typography variant='h6'>Mug Editable</Typography>
-                      <Typography>Bakir</Typography>
+              {allOrders.map(order => (
+                <TableRow key={order.id}>
+                  <TableCell>
+                    <Checkbox />
+                  </TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'flex' }}>
+                      <img
+                        src={`${order.media[0]?.original_url}`}
+                        alt={order.product_name || ''}
+                        className='bs-[40px]'
+                      />
+                      <Box sx={{ ml: 3 }}>
+                        <Typography variant='h6'>{order.product_name}</Typography>
+                        <Typography>Bakir</Typography>
+                      </Box>
                     </Box>
-                  </Box>
-                </TableCell>
-                <TableCell>EGP 200</TableCell>
-              </TableRow>
+                  </TableCell>
+                  <TableCell>{order.total_price}</TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </TableContainer>

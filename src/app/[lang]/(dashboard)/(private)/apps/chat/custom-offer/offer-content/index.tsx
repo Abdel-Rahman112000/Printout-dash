@@ -22,10 +22,12 @@ import type { PaperType } from '@/types/api/common/PaperType'
 import type { Product } from '@/types/api/common/Product'
 import { OfferSchema, type OfferSchemaType } from './OfferSchema'
 import OrderCart from './OrderCart'
+import type { OrderCartType } from '@/types/api/common/OrderCart'
 
 function ContentOffer() {
   const [searchClient, setSearchClient] = useState('')
   const [allOptions, setAllOptions] = useState<AllOptionsType>()
+  const [allOrders, setAllOrders] = useState<OrderCartType[]>([])
   const [paperData, setPaperData] = useState<PaperType>()
   const [productInfo, setProductInfo] = useState<Product>()
 
@@ -35,7 +37,8 @@ function ContentOffer() {
     handleSubmit,
     watch,
     formState: { errors },
-    setValue
+    setValue,
+    reset
   } = useForm<OfferSchemaType>({
     resolver: zodResolver(OfferSchema)
   })
@@ -90,6 +93,25 @@ function ContentOffer() {
       })
   }
 
+  const getOrderCart = async () => {
+    const headers = await getClientAuthHeaders()
+
+    axios
+      .get<{ data: OrderCartType[] }>(api`dashboard/order/user-cart/${client_id}`, {
+        headers
+      })
+      .then(res => {
+        setAllOrders(res.data.data)
+      })
+      .catch(() => {
+        // toast.error('Error in delete vendor')
+      })
+  }
+
+  useEffect(() => {
+    getOrderCart()
+  }, [client_id])
+
   useEffect(() => {
     getAllOptions()
   }, [searchClient, type_id, category_id])
@@ -136,13 +158,13 @@ function ContentOffer() {
       ]
     }
 
-    console.log('payload', payload)
     axios
       .post(api`dashboard/order`, payload, {
         headers
       })
       .then(res => {
         toast.success('success')
+        getOrderCart()
       })
       .catch(err => {
         console.log('error order', err)
@@ -197,6 +219,7 @@ function ContentOffer() {
               <Grid item xs={12}>
                 <Autocomplete
                   size='small'
+                  value={allOptions?.clients.data?.find(client => client.id.toString() == client_id) || null}
                   fullWidth
                   disablePortal
                   options={allOptions?.clients.data || []}
@@ -204,14 +227,13 @@ function ContentOffer() {
                   onInputChange={(event, newInputValue) => {
                     setSearchClient(newInputValue)
                   }}
-                  getOptionLabel={option => option.user_name || ''} // Show user_name in the input field
+                  getOptionLabel={option => option.user_name + '    ' + option.phone || ''}
                   onChange={(event, newValue) => {
                     if (newValue) {
-                      // When a selection is made, update the client_id field with the client's id
-                      setValue('client_id', newValue.id.toString()) // Use setValue from react-hook-form to set the client_id to the id
+                      setValue('client_id', newValue.id.toString())
                     }
                   }}
-                  renderInput={params => <TextField {...params} label='Clients' />} // Render input with proper label
+                  renderInput={params => <TextField {...params} label='Clients' />}
                 />
                 <Typography color='error'>{errors.client_id?.message}</Typography>
               </Grid>
@@ -304,7 +326,7 @@ function ContentOffer() {
                   <Grid key={custom.id} item xs={6}>
                     <Controller
                       control={control}
-                      name={`CustomizationChoices.${index}`} // Use dynamic key like "CustomizationChoices.0", "CustomizationChoices.1", etc.
+                      name={`CustomizationChoices.${index}`}
                       render={({ field }) => (
                         <TextField {...field} size='small' label={custom.name} select fullWidth>
                           {custom?.choices?.map(item => (
@@ -429,7 +451,7 @@ function ContentOffer() {
             </Grid>
             <Grid item xs={12}>
               <Box sx={{ backgroundColor: '#fff', p: 4 }}>
-                <OrderCart />
+                <OrderCart allOrders={allOrders} />
               </Box>
             </Grid>
           </Grid>
