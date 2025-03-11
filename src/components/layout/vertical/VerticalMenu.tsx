@@ -118,6 +118,9 @@ const VerticalMenu = ({ dictionary, scrollMenu }: Props) => {
 
           {isAdmin && <MenuItem href={`/${locale}/apps/chat`}>{dictionary['navigation'].chat}</MenuItem>}
           {isAdmin && <MenuItem href={`/${locale}/apps/settings`}>{dictionary['navigation'].settings}</MenuItem>}
+          {isAdmin && (
+            <MenuItem href={`/${locale}/apps/chat/custom-offer`}>{dictionary['navigation'].MakeOffer}</MenuItem>
+          )}
         </MenuSection>
       </Menu>
       {/* <Menu

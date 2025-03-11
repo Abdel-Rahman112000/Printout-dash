@@ -1,4 +1,5 @@
 'use client'
+
 import { useEffect, useState } from 'react'
 
 import Link from 'next/link'
@@ -10,6 +11,10 @@ import type { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
 
+import { toast } from 'react-toastify'
+
+import { serialize } from 'object-to-formdata'
+
 import { getClientAuthHeaders } from '@/utils/headers/authClient'
 import { api } from '@/utils/api'
 import type { AllOptionsType } from '@/types/apps/allOptionsType'
@@ -17,10 +22,12 @@ import type { PaperType } from '@/types/api/common/PaperType'
 import type { Product } from '@/types/api/common/Product'
 import { OfferSchema, type OfferSchemaType } from './OfferSchema'
 import OrderCart from './OrderCart'
+import type { OrderCartType } from '@/types/api/common/OrderCart'
 
 function ContentOffer() {
   const [searchClient, setSearchClient] = useState('')
   const [allOptions, setAllOptions] = useState<AllOptionsType>()
+  const [allOrders, setAllOrders] = useState<OrderCartType[]>([])
   const [paperData, setPaperData] = useState<PaperType>()
   const [productInfo, setProductInfo] = useState<Product>()
 
@@ -29,13 +36,15 @@ function ContentOffer() {
     register,
     handleSubmit,
     watch,
-    formState: { errors }
+    formState: { errors },
+    setValue,
+    reset
   } = useForm<OfferSchemaType>({
     resolver: zodResolver(OfferSchema)
   })
 
-  const { type_id, category_id, paper_id, product_id } = watch()
-  const paperInfo = paperData?.size.find(index => index.id == paper_id)
+  const { type_id, category_id, paper_id, product_id, client_id } = watch()
+  const paperInfo = paperData?.size.find(index => index.id.toString() == paper_id)
 
   const getProductInfo = async () => {
     const headers = await getClientAuthHeaders()
@@ -45,6 +54,7 @@ function ContentOffer() {
         headers
       })
       .then(res => {
+        console.log(res.data.data)
         setProductInfo(res.data.data)
       })
       .catch(() => {
@@ -83,9 +93,24 @@ function ContentOffer() {
       })
   }
 
-  const onSubmit = handleSubmit(async data => {
-    console.log(data)
-  })
+  const getOrderCart = async () => {
+    const headers = await getClientAuthHeaders()
+
+    axios
+      .get<{ data: OrderCartType[] }>(api`dashboard/order/user-cart/${client_id}`, {
+        headers
+      })
+      .then(res => {
+        setAllOrders(res.data.data)
+      })
+      .catch(() => {
+        // toast.error('Error in delete vendor')
+      })
+  }
+
+  useEffect(() => {
+    getOrderCart()
+  }, [client_id])
 
   useEffect(() => {
     getAllOptions()
@@ -98,6 +123,54 @@ function ContentOffer() {
   useEffect(() => {
     if (product_id) getProductInfo()
   }, [product_id])
+
+  useEffect(() => {
+    setProductInfo(undefined)
+  }, [type_id, category_id])
+
+  useEffect(() => {
+    if (paperInfo) {
+      // Set the values after fetching paperInfo
+      setValue('height', paperInfo?.size?.height)
+      setValue('width', paperInfo?.size?.width)
+    } else {
+      setValue('paper_id', '')
+    }
+  }, [paperInfo, setValue])
+
+  const onSubmit = handleSubmit(async data => {
+    const headers = await getClientAuthHeaders()
+
+    const payload = {
+      note: data.note,
+      type_id: data.type_id,
+      client_id: data.client_id,
+      order_details: [
+        {
+          product_id: data.product_id,
+          qty: data.qty,
+          file: data.file,
+          height: data.height,
+          paper_id: data.paper_id,
+          width: data.width,
+          CustomizationChoices: data.CustomizationChoices || []
+        }
+      ]
+    }
+
+    axios
+      .post(api`dashboard/order`, payload, {
+        headers
+      })
+      .then(res => {
+        toast.success('success')
+        getOrderCart()
+      })
+      .catch(err => {
+        console.log('error order', err)
+        toast.error('error')
+      })
+  })
 
   return (
     <>
@@ -121,7 +194,7 @@ function ContentOffer() {
           <Button variant='outlined' sx={{ mr: 2 }} color='primary'>
             Discard
           </Button>
-          <Button variant='contained' sx={{ mr: 2 }} color='primary' onClick={onSubmit}>
+          <Button variant='contained' sx={{ mr: 2 }} color='primary'>
             Notify User
           </Button>
         </Box>
@@ -146,6 +219,7 @@ function ContentOffer() {
               <Grid item xs={12}>
                 <Autocomplete
                   size='small'
+                  value={allOptions?.clients.data?.find(client => client.id.toString() == client_id) || null}
                   fullWidth
                   disablePortal
                   options={allOptions?.clients.data || []}
@@ -153,8 +227,13 @@ function ContentOffer() {
                   onInputChange={(event, newInputValue) => {
                     setSearchClient(newInputValue)
                   }}
-                  getOptionLabel={option => `${option.user_name}`}
-                  renderInput={params => <TextField {...register('client_id')} {...params} label='Clients' />}
+                  getOptionLabel={option => option.user_name + '    ' + option.phone || ''}
+                  onChange={(event, newValue) => {
+                    if (newValue) {
+                      setValue('client_id', newValue.id.toString())
+                    }
+                  }}
+                  renderInput={params => <TextField {...params} label='Clients' />}
                 />
                 <Typography color='error'>{errors.client_id?.message}</Typography>
               </Grid>
@@ -234,7 +313,7 @@ function ContentOffer() {
                     render={({ field }) => (
                       <TextField {...field} size='small' label='Paper' select fullWidth>
                         {paperData?.size?.map(paper => (
-                          <MenuItem key={paper.id} value={paper.id}>
+                          <MenuItem key={paper.id} value={paper.id.toString()}>
                             {paper.name}
                           </MenuItem>
                         ))}
@@ -243,18 +322,11 @@ function ContentOffer() {
                   />
                   <Typography color='error'>{errors.paper_id?.message}</Typography>
                 </Grid>
-                <Grid item xs={6}>
-                  <TextField label='Height' disabled value={paperInfo?.size.height || ''} fullWidth size='small' />
-                </Grid>
-                <Grid item xs={6}>
-                  <TextField label='Width' disabled value={paperInfo?.size.width || ''} fullWidth size='small' />
-                </Grid>
-
-                {/* {productInfo?.customizations?.map((custom, index) => (
+                {productInfo?.customizations?.map((custom, index) => (
                   <Grid key={custom.id} item xs={6}>
                     <Controller
                       control={control}
-                      name={custom.choices[index].name.toString()}
+                      name={`CustomizationChoices.${index}`}
                       render={({ field }) => (
                         <TextField {...field} size='small' label={custom.name} select fullWidth>
                           {custom?.choices?.map(item => (
@@ -266,17 +338,26 @@ function ContentOffer() {
                       )}
                     />
                   </Grid>
-                ))} */}
+                ))}
 
-                <Grid item xs={12}>
+                <Grid item xs={6}>
                   <TextField
-                    name='note'
+                    {...register('height')}
+                    label='Height'
+                    disabled
+                    value={paperInfo ? paperInfo?.size?.height : ''}
                     fullWidth
                     size='small'
-                    label='Note'
-                    placeholder='Write a note'
-                    multiline
-                    rows={6}
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <TextField
+                    label='Width'
+                    {...register('width')}
+                    disabled
+                    value={paperInfo ? paperInfo?.size?.width : ''}
+                    fullWidth
+                    size='small'
                   />
                 </Grid>
               </Grid>
@@ -288,39 +369,49 @@ function ContentOffer() {
               </Typography>
               <Grid container spacing={3}>
                 <Grid item xs={12}>
-                  <TextField fullWidth size='small' label='Note' placeholder='Write a note' multiline rows={6} />
+                  <TextField
+                    {...register('note')}
+                    fullWidth
+                    size='small'
+                    label='Note'
+                    placeholder='Write a note'
+                    multiline
+                    rows={6}
+                  />
                 </Grid>
               </Grid>
             </Box>
           )}
 
           {/* Upload Image */}
-          <Box sx={{ backgroundColor: '#fff', p: 4, mt: 5 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', my: 4 }}>
-              <Typography variant='body1'>Product Preview Image</Typography>
-              <Link href={''}>Add media from URL</Link>
-            </Box>
+          {type_id != 2 && (
+            <Box sx={{ backgroundColor: '#fff', p: 4, mt: 5 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', my: 4 }}>
+                <Typography variant='body1'>Product Preview Image</Typography>
+                <Link href={''}>Add media from URL</Link>
+              </Box>
 
-            <Controller
-              name='file'
-              control={control}
-              render={({ field, fieldState }) => (
-                <>
-                  <FilePond
-                    files={field.value}
-                    onupdatefiles={files => {
-                      field.onChange(files.map(filepondFile => filepondFile.file))
-                    }}
-                    allowMultiple={true}
-                  />
-                  <Typography color='error'>{fieldState.error?.message}</Typography>
-                </>
-              )}
-            />
-          </Box>
+              <Controller
+                name='file'
+                control={control}
+                render={({ field, fieldState }) => (
+                  <>
+                    <FilePond
+                      files={field.value}
+                      onupdatefiles={files => {
+                        field.onChange(files.map(filepondFile => filepondFile.file))
+                      }}
+                      allowMultiple={true}
+                    />
+                    <Typography color='error'>{fieldState.error?.message}</Typography>
+                  </>
+                )}
+              />
+            </Box>
+          )}
 
           {/* Add Product */}
-          <Button variant='contained' sx={{ mt: 6 }}>
+          <Button variant='contained' sx={{ mt: 6 }} onClick={onSubmit}>
             Add Product
           </Button>
         </Grid>
@@ -335,8 +426,8 @@ function ContentOffer() {
                 </Typography>
                 <Grid container spacing={3}>
                   <Grid item xs={12}>
-                    <TextField {...register('quantity')} fullWidth size='small' label='Quantity' />
-                    <Typography color='error'>{errors.quantity?.message}</Typography>
+                    <TextField {...register('qty')} fullWidth size='small' label='Quantity' />
+                    <Typography color='error'>{errors.qty?.message}</Typography>
                   </Grid>
                   <Grid item xs={12}>
                     <TextField {...register('processing_days')} fullWidth size='small' label='Processing Days' />
@@ -360,7 +451,7 @@ function ContentOffer() {
             </Grid>
             <Grid item xs={12}>
               <Box sx={{ backgroundColor: '#fff', p: 4 }}>
-                <OrderCart />
+                <OrderCart allOrders={allOrders} />
               </Box>
             </Grid>
           </Grid>
