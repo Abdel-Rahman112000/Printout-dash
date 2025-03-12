@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import {
   Box,
   Button,
@@ -10,12 +12,39 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Tooltip,
   Typography
 } from '@mui/material'
 
-import type { OrderCartType } from '@/types/api/common/OrderCart'
+import axios from 'axios'
 
-function OrderCart({ allOrders }: { allOrders: OrderCartType[] }) {
+import { toast } from 'react-toastify'
+
+import type { OrderCartType } from '@/types/api/common/OrderCart'
+import { api } from '@/utils/api'
+import { getClientAuthHeaders } from '@/utils/headers/authClient'
+
+function OrderCart({ allOrders, getOrderCart }: { allOrders: OrderCartType[]; getOrderCart: () => void }) {
+  const [checkedId, setCheckedId] = useState<number>()
+  const [checked, setChecked] = useState<boolean>(false)
+
+  async function handleDelete(id: string | number) {
+    const headers = await getClientAuthHeaders()
+
+    axios
+      .delete(api`dashboard/order/${id}`, {
+        headers
+      })
+      .then(res => {
+        toast.success('success Delete')
+        getOrderCart()
+        setChecked(false)
+      })
+      .catch(err => {
+        toast.error('Error in delete order')
+      })
+  }
+
   if (!allOrders.length)
     return (
       <>
@@ -31,7 +60,7 @@ function OrderCart({ allOrders }: { allOrders: OrderCartType[] }) {
         </Typography>
         <Box>
           <Button variant='text'>Edit</Button>
-          <Button variant='text' color='error'>
+          <Button variant='text' color='error' disabled={!checked} onClick={() => checkedId && handleDelete(checkedId)}>
             Delete
           </Button>
         </Box>
@@ -41,27 +70,42 @@ function OrderCart({ allOrders }: { allOrders: OrderCartType[] }) {
           <Table stickyHeader>
             <TableHead>
               <TableRow>
-                <TableCell sx={{ width: '80px' }}></TableCell>
+                <TableCell></TableCell>
                 <TableCell sx={{ fontWeight: 600, fontSize: '16px' }}>Product</TableCell>
-                <TableCell sx={{ width: '100px' }}></TableCell>
+                <TableCell></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {allOrders.map(order => (
                 <TableRow key={order.id}>
                   <TableCell>
-                    <Checkbox />
+                    <Checkbox
+                      onChange={event => {
+                        if (event.target.checked) {
+                          setChecked(true)
+                          setCheckedId(order.id)
+                        }
+                      }}
+                    />
                   </TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex' }}>
                       <img
                         src={`${order.media[0]?.original_url}`}
                         alt={order.product_name || ''}
-                        className='bs-[40px]'
+                        className='bs-[30px]'
+                        style={{ objectFit: 'cover', height: '50px', width: '50px' }}
                       />
                       <Box sx={{ ml: 3 }}>
-                        <Typography variant='h6'>{order.product_name}</Typography>
-                        <Typography>Bakir</Typography>
+                        <Tooltip title={order.product_name} arrow>
+                          <Typography variant='h6'>
+                            {(order.product_name as string).length > 12
+                              ? `${(order.product_name as string).slice(0, 12)}...`
+                              : order.product_name}
+                          </Typography>
+                        </Tooltip>
+
+                        {/* <Typography>Bakir</Typography> */}
                       </Box>
                     </Box>
                   </TableCell>
@@ -71,7 +115,7 @@ function OrderCart({ allOrders }: { allOrders: OrderCartType[] }) {
             </TableBody>
           </Table>
         </TableContainer>
-        <Stack sx={{ margin: '40px' }}>
+        {/* <Stack sx={{ margin: '40px' }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
             <Typography sx={{ fontSize: '18px', fontWeight: 500 }}>Subtotal : </Typography>
             <Typography variant='h6' sx={{ fontWeight: 700 }}>
@@ -96,7 +140,7 @@ function OrderCart({ allOrders }: { allOrders: OrderCartType[] }) {
               EGP 2,093
             </Typography>
           </Box>
-        </Stack>
+        </Stack> */}
       </Paper>
     </Stack>
   )
