@@ -7,13 +7,10 @@ import Link from 'next/link'
 import { Autocomplete, Box, Button, Grid, MenuItem, Select, Stack, TextField, Typography } from '@mui/material'
 import { Controller, useForm } from 'react-hook-form'
 import { FilePond } from 'react-filepond'
-import type { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
 
 import { toast } from 'react-toastify'
-
-import { serialize } from 'object-to-formdata'
 
 import { getClientAuthHeaders } from '@/utils/headers/authClient'
 import { api } from '@/utils/api'
@@ -43,6 +40,7 @@ function ContentOffer() {
     resolver: zodResolver(OfferSchema)
   })
 
+  console.log('errors', errors)
   const { type_id, category_id, paper_id, product_id, client_id } = watch()
   const paperInfo = paperData?.size.find(index => index.id.toString() == paper_id)
 
@@ -165,6 +163,18 @@ function ContentOffer() {
       .then(res => {
         toast.success('success')
         getOrderCart()
+        reset({
+          name: '',
+          type_id: data.type_id,
+          client_id: data.client_id,
+          category_id: '',
+          product_id: '',
+          paper_id: '',
+          note: '',
+          processing_days: '',
+          discounted_price: '',
+          qty: ''
+        })
       })
       .catch(err => {
         console.log('error order', err)
@@ -219,15 +229,20 @@ function ContentOffer() {
               <Grid item xs={12}>
                 <Autocomplete
                   size='small'
-                  value={allOptions?.clients.data?.find(client => client.id.toString() == client_id) || null}
                   fullWidth
                   disablePortal
-                  options={allOptions?.clients.data || []}
-                  inputValue={searchClient}
+                  options={allOptions?.clients?.data || []}
                   onInputChange={(event, newInputValue) => {
                     setSearchClient(newInputValue)
                   }}
-                  getOptionLabel={option => option.user_name + '    ' + option.phone || ''}
+                  getOptionLabel={option => `${option.user_name}`}
+                  filterOptions={(options, { inputValue }) =>
+                    options.filter(
+                      option =>
+                        option.user_name.toLowerCase().includes(inputValue.toLowerCase()) ||
+                        option.phone.toLowerCase().includes(inputValue.toLowerCase())
+                    )
+                  }
                   onChange={(event, newValue) => {
                     if (newValue) {
                       setValue('client_id', newValue.id.toString())
@@ -253,7 +268,7 @@ function ContentOffer() {
                   render={({ field }) => (
                     <TextField {...field} size='small' label='Types' select fullWidth>
                       {allOptions?.types?.map(type => (
-                        <MenuItem key={type.id} value={type.id}>
+                        <MenuItem key={type.id} value={type.id.toString()}>
                           {type.name}
                         </MenuItem>
                       ))}
@@ -270,7 +285,7 @@ function ContentOffer() {
                   render={({ field }) => (
                     <TextField {...field} size='small' label='Categories' select fullWidth disabled={!type_id}>
                       {allOptions?.categories.data?.map(cat => (
-                        <MenuItem key={cat.id} value={cat.id}>
+                        <MenuItem key={cat.id} value={cat.id.toString()}>
                           {cat.name}
                         </MenuItem>
                       ))}
@@ -287,7 +302,7 @@ function ContentOffer() {
                   render={({ field }) => (
                     <TextField {...field} size='small' label='Products' select fullWidth disabled={!category_id}>
                       {allOptions?.products.data?.map(product => (
-                        <MenuItem key={product.id} value={product.id}>
+                        <MenuItem key={product.id} value={product.id.toString()}>
                           {product.name}
                         </MenuItem>
                       ))}
@@ -384,7 +399,7 @@ function ContentOffer() {
           )}
 
           {/* Upload Image */}
-          {type_id != 2 && (
+          {type_id != '2' && (
             <Box sx={{ backgroundColor: '#fff', p: 4, mt: 5 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', my: 4 }}>
                 <Typography variant='body1'>Product Preview Image</Typography>
@@ -451,7 +466,7 @@ function ContentOffer() {
             </Grid>
             <Grid item xs={12}>
               <Box sx={{ backgroundColor: '#fff', p: 4 }}>
-                <OrderCart allOrders={allOrders} />
+                <OrderCart allOrders={allOrders} getOrderCart={getOrderCart} />
               </Box>
             </Grid>
           </Grid>
