@@ -127,7 +127,7 @@ function ProductCustomizationForm({ handleNext }: Props) {
           return {
             product_id: `${product?.id}`,
             choices: customization.choices.map(({ name, price, type }) => ({ name, price, type })),
-            customizations_type: customization.type_id,
+            customizatidfdfons_type: customization.type_id,
             name: customization.name
           }
         })
