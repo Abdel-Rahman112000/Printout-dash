@@ -166,7 +166,9 @@ function ProductDetailsForm({ categories, handleNext }: Props) {
 
         setProductId(res.data.data.id)
         refetch()
-        handleNext()
+
+        data.type_id == '2' ? handleNext(2) : handleNext(1)
+
         product?.id ? toast.success('Success Edit') : toast.success('Success Add')
       } catch (error: any) {
         console.log('errorerror', error)
@@ -245,7 +247,7 @@ function ProductDetailsForm({ categories, handleNext }: Props) {
         )}
 
         {/* description */}
-        <Grid xs={12} m={3}>
+        <Grid xs={12} p={4}>
           <AddLabelToEl label='Description' error={errors.description?.message}>
             <TextField multiline minRows={2} placeholder='Description' {...register('description')} />
           </AddLabelToEl>
@@ -297,7 +299,7 @@ function ProductDetailsForm({ categories, handleNext }: Props) {
         </GridItem>
 
         <GridItem md={12}>
-          <AddLabelToEl label='Images' error={errors.image?.message}>
+          <AddLabelToEl label='Images / Videos' error={errors.image?.message}>
             <Controller
               name='image'
               control={control}
@@ -308,8 +310,7 @@ function ProductDetailsForm({ categories, handleNext }: Props) {
                     field.onChange(files.map(filepondFile => filepondFile.file))
                   }}
                   allowMultiple={true}
-                  acceptedFileTypes={['image/*']}
-                  
+                  acceptedFileTypes={['image/*', 'video/*']}
                 />
               )}
             />
@@ -325,6 +326,6 @@ function ProductDetailsForm({ categories, handleNext }: Props) {
 
 type Props = {
   categories: Category[]
-  handleNext: () => void
+  handleNext: (id: number) => void
 }
 export default ProductDetailsForm

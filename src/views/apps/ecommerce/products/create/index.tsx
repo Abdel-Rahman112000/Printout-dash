@@ -51,14 +51,18 @@ const CreateProjectComponent = ({ categories }: Props) => {
         title: 'Product Details',
         subtitle: 'Category /Name',
         Content: () => (
-          <ProductDetailsForm key={fetchCounts} categories={categories} handleNext={() => setActiveStep(1)} />
+          <ProductDetailsForm
+            key={fetchCounts}
+            categories={categories}
+            handleNext={(id: number) => setActiveStep(id)}
+          />
         )
       },
       {
         icon: 'tabler-copy',
         title: 'Customizations',
         subtitle: 'Set available customizations',
-        Content: () => <ProductCustomizationForm key={fetchCounts} handleNext={() => setActiveStep(2)} />
+        Content: () => <ProductCustomizationForm key={fetchCounts} handleNext={(id: number) => setActiveStep(id)} />
       },
       {
         icon: 'tabler-currency-dollar',

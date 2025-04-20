@@ -137,7 +137,7 @@ function ProductCustomizationForm({ handleNext }: Props) {
         const headers = await getClientAuthSession()
         const res = await addCustomizationsToProduct(dto, headers)
 
-        handleNext()
+        handleNext(2)
         refetch()
       } catch (error: any) {
         enqueueSnackbar(getStatusMessage(error.status, 'funny'))
@@ -164,7 +164,7 @@ function ProductCustomizationForm({ handleNext }: Props) {
         <LoadingButton loading={isSubmitting} type='submit' variant='contained' sx={{ flexGrow: 1 }}>
           Submit
         </LoadingButton>
-        <Button variant='outlined' onClick={() => handleNext()}>
+        <Button variant='outlined' onClick={() => handleNext(2)}>
           Skip Customizations
         </Button>
       </div>
@@ -173,6 +173,6 @@ function ProductCustomizationForm({ handleNext }: Props) {
 }
 
 type Props = {
-  handleNext: () => void
+  handleNext: (id: number) => void
 }
 export default ProductCustomizationForm

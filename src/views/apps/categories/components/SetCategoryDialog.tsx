@@ -8,7 +8,7 @@ import DialogContent from '@mui/material/DialogContent'
 import DialogTitle from '@mui/material/DialogTitle'
 import Slide from '@mui/material/Slide'
 import type { TransitionProps } from '@mui/material/transitions'
-import { Box, Stack, TextField, Typography } from '@mui/material'
+import { Box, Checkbox, FormControlLabel, Stack, TextField, Typography } from '@mui/material'
 import { Controller, useForm } from 'react-hook-form'
 import axios from 'axios'
 
@@ -51,9 +51,15 @@ export default function SetCategoryDialog(props: PropsType) {
 
   React.useEffect(() => {
     if (editedCategory) {
-      reset({ name: editedCategory?.name })
+      reset({
+        name: editedCategory?.name,
+        featured: editedCategory?.featured ?? false
+      })
     } else {
-      reset({ name: '' })
+      reset({
+        name: '',
+        featured: false
+      })
     }
   }, [open, editedCategory])
 
@@ -69,8 +75,11 @@ export default function SetCategoryDialog(props: PropsType) {
 
     const body = {
       ...data,
+      featured: data.featured ? 1 : 0, // Convert to 1 or 0
       image: data.image?.[0]
     }
+
+    console.log('body', body)
 
     axios
       .post(api`${url}`, serialize(body), { headers })
@@ -80,9 +89,8 @@ export default function SetCategoryDialog(props: PropsType) {
         handleClose()
       })
       .catch(() => {
-        toast.error('Fiald add vendor')
+        toast.error('Failed to add vendor')
       })
-      .finally(() => {})
   })
 
   return (
@@ -99,6 +107,19 @@ export default function SetCategoryDialog(props: PropsType) {
         <DialogTitle>{Boolean(editedCategory) ? 'Edit' : 'Add'} Category</DialogTitle>
         <DialogContent>
           <Stack spacing={3} component={'form'} onSubmit={handleOnSubmit}>
+            <Controller
+              name='featured'
+              control={control}
+              defaultValue={false}
+              render={({ field }) => (
+                <FormControlLabel
+                  control={
+                    <Checkbox {...field} checked={field.value} onChange={e => field.onChange(e.target.checked)} />
+                  }
+                  label='Featured'
+                />
+              )}
+            />
             <AddLabelToEl label='Category Name' error={errors.name?.message}>
               <TextField
                 size='small'
@@ -162,7 +183,8 @@ export default function SetCategoryDialog(props: PropsType) {
 
 const SetVendorFormType = z.object({
   name: z.string().min(1, 'Category name is required'),
-  image: z.array(z.instanceof(File)).min(1)
+  featured: z.boolean().optional(),
+  image: z.array(z.instanceof(File)).min(1, 'Please upload an image')
 })
 
 type FormSchema = z.infer<typeof SetVendorFormType>

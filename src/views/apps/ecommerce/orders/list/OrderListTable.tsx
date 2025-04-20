@@ -268,8 +268,6 @@ const OrderListTable = () => {
               .catch(() => {})
           }
 
-          console.log('row.original?.status_vendor', row.original?.status_vendor)
-
           return (
             <Button
               variant='outlined'
