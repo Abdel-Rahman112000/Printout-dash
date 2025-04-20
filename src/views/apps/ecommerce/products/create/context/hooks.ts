@@ -27,8 +27,6 @@ function useProductHooks(overrideProductId?: string | number) {
     }
   })
 
-  console.log('product', query.data, query)
-
   return {
     query,
     productId: productIdToUse,

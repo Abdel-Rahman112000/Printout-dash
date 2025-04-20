@@ -32,7 +32,7 @@ import type { ColumnDef, FilterFn } from '@tanstack/react-table'
 import type { RankingInfo } from '@tanstack/match-sorter-utils'
 
 // Type Imports
-import { Avatar, IconButton, Stack } from '@mui/material'
+import { Box, Chip, IconButton, Stack } from '@mui/material'
 
 import DeleteIcon from '@mui/icons-material/Delete'
 
@@ -42,6 +42,7 @@ import { toast } from 'react-toastify'
 
 // Component Imports
 import EditIcon from '@mui/icons-material/Edit'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 
 import TablePaginationComponent from '@components/TablePaginationComponent'
 import CustomTextField from '@core/components/mui/TextField'
@@ -150,9 +151,18 @@ const CategoriesDataTable = () => {
       columnHelper.accessor('name', {
         header: 'Category',
         cell: ({ row }) => (
-          <Stack spacing={1} direction={'row'}>
-            <img src={row.original.media?.[0]?.original_url ?? ''} width={80} height={80} alt='category image' />
-            <Typography color='text.primary'>{row.original.name}</Typography>
+          <Stack spacing={1} direction={'row'} alignItems={'center'} gap={2}>
+            <img
+              src={row.original.media?.[0]?.original_url ?? ''}
+              width={80}
+              height={80}
+              alt='category image'
+              style={{ objectFit: 'cover' }}
+            />
+            <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+              <Typography color='text.primary'>{row.original.name}</Typography>
+              {row.original.featured ? <CheckCircleIcon color='success' sx={{ mx: 3 }} /> : ''}
+            </Box>
           </Stack>
         )
       }),

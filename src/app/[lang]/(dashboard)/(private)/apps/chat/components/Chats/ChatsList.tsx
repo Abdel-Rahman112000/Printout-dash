@@ -59,7 +59,6 @@ const ChatItem = ({ man }: { man: DeliveryMan }) => {
     const channel = pusher.subscribe(`chat-channel_${man?.global_id}-0`)
 
     channel.bind('new-message', (data: MessageType) => {
-      console.log('TargetCompare', data, userData)
       if (!isActive && data.receiver_id != userData?.id) setNotificationCounter(prev => prev + 1)
       else setNotificationCounter(0)
 
