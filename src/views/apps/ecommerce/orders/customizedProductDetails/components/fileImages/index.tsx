@@ -9,13 +9,15 @@ import { CustimizedProductCxt } from '../../context'
 export default function ProductFileImages() {
   const { orderData } = useContext(CustimizedProductCxt)
 
+  console.log()
+
   return (
     <Box>
       <Stack direction={'row'} spacing={3} overflow={'auto'} sx={{ my: 4 }}>
         {/* loading case */}
         {orderData === undefined && <LoadingCase />}
         {/* show images */}
-        {/* {orderData?.pictures?.map(image => (
+        {orderData?.pictures?.map(image => (
           <img
             key={image.id}
             src={image?.original_url ?? ''}
@@ -23,13 +25,14 @@ export default function ProductFileImages() {
             height={'200px'}
             alt={`image ${image.id}`}
           />
-        ))} */}
+        ))}
         {/* No images */}
-        {/* {orderData?.pictures?.length == 0 && (
+
+        {orderData?.pictures?.length == 0 && (
           <Stack alignItems={'center'} justifyContent={'center'}>
             No media files
           </Stack>
-        )} */}
+        )}
       </Stack>
     </Box>
   )

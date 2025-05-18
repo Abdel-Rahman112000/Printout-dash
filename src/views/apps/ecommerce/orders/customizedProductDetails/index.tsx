@@ -14,7 +14,7 @@ export default function CustomizedProductDetails() {
       <Card sx={{ p: 4 }}>
         <CustomizationDetailsCardHeader />
         <Stack spacing={5}>
-          {/* <ProductFileImages /> */}
+          <ProductFileImages />
           <Divider flexItem />
           <SettingSection />
           <Divider flexItem />

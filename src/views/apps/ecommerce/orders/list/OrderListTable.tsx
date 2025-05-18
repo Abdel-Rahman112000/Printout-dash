@@ -419,7 +419,13 @@ const OrderListTable = () => {
     initialState: {
       pagination: {
         pageSize: 10
-      }
+      },
+      sorting: [
+        {
+          id: 'id',
+          desc: true
+        }
+      ]
     },
     enableRowSelection: true, //enable row selection for all rows
     // enableRowSelection: row => row.original.age > 18, // or enable row selection conditionally per row

@@ -231,6 +231,8 @@ const OrderTable = ({
 const OrderDetailsCard = () => {
   const { orderData: order, orderDataLoading } = useContext(SubOrderCxt)
 
+  console.log('Order Details', order)
+
   if (orderDataLoading) return <Skeleton variant='rounded' width={'100%'} height={'220px'} />
 
   return (

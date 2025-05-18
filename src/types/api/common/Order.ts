@@ -100,6 +100,7 @@ export interface OrderDetail {
   width: number
   product?: Product
   order?: Order
+  pictures?: Media[]
 }
 
 export interface Customization {

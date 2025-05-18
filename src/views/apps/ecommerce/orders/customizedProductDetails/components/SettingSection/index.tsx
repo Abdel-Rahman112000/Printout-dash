@@ -60,10 +60,12 @@ export default function SettingSection() {
 
 const ProperitiesList = () => {
   const { orderData } = useContext(CustimizedProductCxt)
-  const color = orderData?.color ?? 'Original'
-  const scalling = orderData?.scalling ?? '_'
-  const paperType = orderData?.paper_type ?? '_'
-  const quantity = orderData?.qty ?? '_'
+  const color = orderData?.color ?? 'Not specified'
+  const scalling = orderData?.scalling ?? 'Not specified'
+  const paperType = orderData?.paper_type ?? 'Not specified'
+  const quantity = orderData?.qty ?? 'Not specified'
+
+  console.log('quantity', quantity)
 
   return (
     <List>

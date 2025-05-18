@@ -45,7 +45,13 @@ const Timeline = styled(MuiTimeline)<TimelineProps>({
 const ShippingActivity = () => {
   const { orderData: order, orderDataLoading } = useContext(SubOrderCxt)
 
+  console.log('orderData', order)
+
   if (orderDataLoading) return <Skeleton variant='rectangular' width={'100%'} height={'220px'} />
+
+  const formatStatusText = (status: string) => {
+    return status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+  }
 
   return (
     <Card>
@@ -63,7 +69,7 @@ const ShippingActivity = () => {
               <TimelineContent>
                 <div className='flex flex-wrap items-center justify-between gap-x-2 mbe-2.5'>
                   <Typography color='text.primary' className='font-medium'>
-                    {status.status}
+                    {formatStatusText(status.status)}
                   </Typography>
                   <Typography variant='caption'>
                     {status.updated_at ? new Date(status.updated_at).toLocaleString() : '-'}
