@@ -105,6 +105,15 @@ const VerticalMenu = ({ dictionary, scrollMenu }: Props) => {
 
           {isAdmin && <MenuItem href={`/${locale}/apps/categories`}>{dictionary['navigation'].categories}</MenuItem>}
           {isAdmin && <MenuItem href={`/${locale}/apps/user/list`}>{dictionary['navigation'].user}</MenuItem>}
+
+          <SubMenu label={dictionary['navigation'].customers}>
+            <MenuItem href={`/${locale}/apps/ecommerce/customers/Individuals/list`}>
+              {dictionary['navigation'].individuals}
+            </MenuItem>
+            <MenuItem href={`/${locale}/apps/ecommerce/customers/corporates/list`}>
+              {dictionary['navigation'].corporates}
+            </MenuItem>
+          </SubMenu>
           {isAdmin && <MenuItem href={`/${locale}/apps/tracking-map`}>{dictionary['navigation'].TrackingMAP}</MenuItem>}
           {isAdmin && <MenuItem href={`/${locale}/apps/vendors`}>{dictionary['navigation'].vendors}</MenuItem>}
           {isAdmin && <MenuItem href={`/${locale}/apps/roles`}>{dictionary['navigation'].roles}</MenuItem>}
