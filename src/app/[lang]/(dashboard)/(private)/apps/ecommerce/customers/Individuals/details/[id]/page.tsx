@@ -5,10 +5,12 @@ import { redirect } from 'next/navigation'
 import type { Customer } from '@/types/apps/ecommerceTypes'
 
 // Component Imports
-import CustomerDetails from '@/views/apps/ecommerce/customers/details'
+import CustomerDetails from '@/views/apps/ecommerce/customers/Individuals/details'
 
 // Data Imports
 import { getEcommerceData } from '@/app/server/actions'
+import { getClients, useClients } from '@/utils/api/Customers/getCustomers'
+import { getServerAuthHeaders } from '@/utils/headers/authServer'
 
 /**
  * ! If you need data using an API call, uncomment the below API code, update the `process.env.API_URL` variable in the
@@ -29,16 +31,22 @@ import { getEcommerceData } from '@/app/server/actions'
 } */
 
 const CustomerDetailsPage = async ({ params }: { params: { id: string } }) => {
-  // Vars
-  const data = await getEcommerceData()
+  // ❶ الهيدرز المطلوبة للمصادقة
+  const headers = await getServerAuthHeaders()
 
-  const filteredData = data?.customerData.filter((item: Customer) => item.customerId === params.id)[0]
+  // ❷ كل العملاء
+  const clients = await getClients(headers) // النوع Clients[]
 
-  if (!filteredData) {
+  // ❸ ابحث عن العميل اللي الـ id بتاعه يطابق param
+  const customer = clients.find(client => String(client.id) === params.id) as Customer | undefined
+
+  // ❹ لو مش موجود ▸ حوِّل لصفحة not‑found
+  if (!customer) {
     redirect('/not-found')
   }
 
-  return filteredData ? <CustomerDetails customerData={filteredData} customerId={params.id} /> : null
+  // ❺ مرِّر العنصر الفردي للمكوِّن
+  return <CustomerDetails customerData={customer} customerId={params.id} />
 }
 
 export default CustomerDetailsPage

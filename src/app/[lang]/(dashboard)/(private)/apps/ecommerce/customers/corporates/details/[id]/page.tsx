@@ -5,10 +5,11 @@ import { redirect } from 'next/navigation'
 import type { Customer } from '@/types/apps/ecommerceTypes'
 
 // Component Imports
-import CustomerDetails from '@/views/apps/ecommerce/customers/details'
+// import CustomerDetails from '@/views/apps/ecommerce/customers/details'
 
 // Data Imports
 import { getEcommerceData } from '@/app/server/actions'
+import CustomerDetails from '@/views/apps/ecommerce/customers/corporates/details/customer-left-overview/CustomerDetails'
 
 /**
  * ! If you need data using an API call, uncomment the below API code, update the `process.env.API_URL` variable in the

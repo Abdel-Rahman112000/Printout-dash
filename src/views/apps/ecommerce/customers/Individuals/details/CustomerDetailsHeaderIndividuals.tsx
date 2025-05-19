@@ -10,7 +10,7 @@ import type { ThemeColor } from '@core/types'
 import ConfirmationDialog from '@components/dialogs/confirmation-dialog'
 import OpenDialogOnElementClick from '@components/dialogs/OpenDialogOnElementClick'
 
-const CustomerDetailHeader = ({ customerId }: { customerId: string }) => {
+const CustomerDetailHeaderIndividuals = ({ customerId }: { customerId: string }) => {
   // Vars
   const buttonProps = (children: string, color: ThemeColor, variant: ButtonProps['variant']): ButtonProps => ({
     children,
@@ -34,4 +34,4 @@ const CustomerDetailHeader = ({ customerId }: { customerId: string }) => {
   )
 }
 
-export default CustomerDetailHeader
+export default CustomerDetailHeaderIndividuals

@@ -11,16 +11,19 @@ import Grid from '@mui/material/Grid'
 import type { Customer } from '@/types/apps/ecommerceTypes'
 
 // Component Imports
-import CustomerDetailsHeader from './CustomerDetailsHeader'
-import CustomerLeftOverview from './customer-left-overview'
-import CustomerRight from './customer-right'
+import CustomerLeftOverviewIndividuals from './customer-left-overview'
+import CustomerDetailHeaderIndividuals from './CustomerDetailsHeaderIndividuals'
+import CustomerRightIndividuals from './customer-right'
 
-const OverViewTab = dynamic(() => import('@views/apps/ecommerce/customers/details/customer-right/overview'))
-const SecurityTab = dynamic(() => import('@views/apps/ecommerce/customers/details/customer-right/security'))
-const NotificationsTab = dynamic(() => import('@views/apps/ecommerce/customers/details/customer-right/notification'))
+const OverViewTab = dynamic(() => import('@views/apps/ecommerce/customers/Individuals/details/customer-right/overview'))
+const SecurityTab = dynamic(() => import('@views/apps/ecommerce/customers/Individuals/details/customer-right/security'))
+
+const NotificationsTab = dynamic(
+  () => import('@views/apps/ecommerce/customers/Individuals/details/customer-right/notification')
+)
 
 const AddressBillingTab = dynamic(
-  () => import('@views/apps/ecommerce/customers/details/customer-right/address-billing')
+  () => import('@views/apps/ecommerce/customers/Individuals/details/customer-right/address-billing')
 )
 
 // Vars
@@ -35,13 +38,13 @@ const CustomerDetails = ({ customerData, customerId }: { customerData?: Customer
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
-        <CustomerDetailsHeader customerId={customerId} />
+        <CustomerDetailHeaderIndividuals customerId={customerId} />
       </Grid>
       <Grid item xs={12} md={4}>
-        <CustomerLeftOverview customerData={customerData} />
+        <CustomerLeftOverviewIndividuals customerData={customerData} />
       </Grid>
       <Grid item xs={12} md={8}>
-        <CustomerRight tabContentList={tabContentList()} />
+        <CustomerRightIndividuals tabContentList={tabContentList()} />
       </Grid>
     </Grid>
   )

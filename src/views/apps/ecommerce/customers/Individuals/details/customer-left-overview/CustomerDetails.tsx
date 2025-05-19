@@ -27,10 +27,10 @@ const CustomerDetails = ({ customerData }: { customerData?: Customer }) => {
       <CardContent className='flex flex-col pbs-12 gap-6'>
         <div className='flex flex-col justify-self-center items-center gap-6'>
           <div className='flex flex-col items-center gap-4'>
-            <CustomAvatar src={customerData?.avatar} variant='rounded' alt='Customer Avatar' size={120} />
+            <CustomAvatar src={customerData?.media[0]} variant='rounded' alt='Customer Avatar' size={120} />
             <div className='flex flex-col items-center text-center'>
-              <Typography variant='h5'>{customerData?.customer}</Typography>
-              <Typography>Customer ID #{customerData?.customerId}</Typography>
+              <Typography variant='h5'>{customerData?.user_name}</Typography>
+              <Typography>Customer ID #{customerData?.id}</Typography>
             </div>
           </div>
           <div className='flex items-center justify-around gap-4 flex-wrap is-full'>
@@ -39,7 +39,7 @@ const CustomerDetails = ({ customerData }: { customerData?: Customer }) => {
                 <i className='tabler-shopping-cart' />
               </CustomAvatar>
               <div>
-                <Typography variant='h5'>{customerData?.order}</Typography>
+                <Typography variant='h5'>{customerData?.orders_count}</Typography>
                 <Typography>Orders</Typography>
               </div>
             </div>
@@ -60,7 +60,7 @@ const CustomerDetails = ({ customerData }: { customerData?: Customer }) => {
           <div className='flex flex-col gap-2'>
             <div className='flex items-center gap-1'>
               <Typography color='text.primary' className='font-medium'>
-                Username:
+                Username:{customerData?.user_name}
               </Typography>
               <Typography>{customerData?.customer}</Typography>
             </div>
@@ -80,7 +80,7 @@ const CustomerDetails = ({ customerData }: { customerData?: Customer }) => {
               <Typography color='text.primary' className='font-medium'>
                 Contact:
               </Typography>
-              <Typography>+1 (234) 464-0600</Typography>
+              <Typography>{customerData?.phone}</Typography>
             </div>
             <div className='flex items-center gap-1'>
               <Typography color='text.primary' className='font-medium'>

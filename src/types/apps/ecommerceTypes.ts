@@ -1,16 +1,22 @@
 export type Customer = {
   id: number
-  customer: string
-  customerId: string
+  user_name: string
   email: string
-  country: string
-  countryCode: string
-  countryFlag?: string
-  order: number
-  totalSpent: number
-  avatar: string
-  status?: string
-  contact?: string
+  phone: string
+  company_name: string
+  commerce_registration: string | null
+  otp: string
+  otp_expires_at: string // أو يمكن استخدام Date لو بتحول النص لتاريخ
+  email_verified_at: string | null
+  created_at: string // أو Date
+  updated_at: string // أو Date
+  cfm_token: string
+  global_id: string
+  type: string
+  tax: string | null
+  orders_count: number
+  pictures: any[] // ممكن تحدد نوع العناصر إذا عندك تفاصيل أكثر
+  media: any[]
 }
 
 export type ReferralsType = {

@@ -15,7 +15,6 @@ import Typography from '@mui/material/Typography'
 import Checkbox from '@mui/material/Checkbox'
 import TablePagination from '@mui/material/TablePagination'
 import type { TextFieldProps } from '@mui/material/TextField'
-import MenuItem from '@mui/material/MenuItem'
 
 // Third-party Imports
 import classnames from 'classnames'
@@ -36,6 +35,9 @@ import type { ColumnDef, FilterFn } from '@tanstack/react-table'
 import type { RankingInfo } from '@tanstack/match-sorter-utils'
 
 // Type Imports
+
+import { IconButton, Menu, MenuItem } from '@mui/material'
+
 import type { ThemeColor } from '@core/types'
 import type { Customer } from '@/types/apps/ecommerceTypes'
 import type { Locale } from '@configs/i18n'
@@ -52,6 +54,9 @@ import { getLocalizedUrl } from '@/utils/i18n'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
+import OptionMenu from '@/@core/components/option-menu'
+import { useClients } from '@/utils/api/Customers/getCustomers'
+import type { Clients, GetClientsRoot } from '@/types/api/common/Clients'
 
 declare module '@tanstack/table-core' {
   interface FilterFns {
@@ -85,7 +90,7 @@ export const statusChipColor: { [key: string]: StatusChipColorType } = {
   Dispatched: { color: 'warning' }
 }
 
-type ECommerceOrderTypeWithAction = Customer & {
+type ECommerceOrderTypeWithAction = Clients & {
   action?: string
 }
 
@@ -138,8 +143,11 @@ const CustomerListTable = ({ customerData }: { customerData?: Customer[] }) => {
   // States
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
-  const [data, setData] = useState(...[customerData])
   const [globalFilter, setGlobalFilter] = useState('')
+  const [data, setData] = useState(...[customerData])
+  const { data: customerList, isLoading, error } = useClients()
+
+  console.log('customerData', customerList)
 
   // Hooks
   const { lang: locale } = useParams()
@@ -168,49 +176,89 @@ const CustomerListTable = ({ customerData }: { customerData?: Customer[] }) => {
           />
         )
       },
-      columnHelper.accessor('customer', {
+      columnHelper.accessor('user_name', {
         header: 'Customers Individuals',
         cell: ({ row }) => (
           <div className='flex items-center gap-3'>
-            {getAvatar({ avatar: row.original.avatar, customer: row.original.customer })}
+            {getAvatar({ avatar: row.original.media, customer: row.original.customer })}
             <div className='flex flex-col items-start'>
               <Typography
                 component={Link}
                 color='text.primary'
-                href={getLocalizedUrl(`/apps/ecommerce/customers/details/${row.original.customerId}`, locale as Locale)}
+                href={getLocalizedUrl(
+                  `/apps/ecommerce/customers/Individuals/details/${row.original.id}`,
+                  locale as Locale
+                )}
                 className='font-medium hover:text-primary'
               >
-                {row.original.customer}
+                {row.original.user_name}
               </Typography>
               <Typography variant='body2'>{row.original.email}</Typography>
             </div>
           </div>
         )
       }),
-      columnHelper.accessor('customerId', {
+      columnHelper.accessor('id', {
         header: 'Customer Id',
-        cell: ({ row }) => <Typography color='text.primary'>#{row.original.customerId}</Typography>
+        cell: ({ row }) => <Typography color='text.primary'>#{row.original.id}</Typography>
       }),
       columnHelper.accessor('country', {
         header: 'Country',
         cell: ({ row }) => (
           <div className='flex items-center gap-2'>
             <img src={row.original.countryFlag} height={22} />
-            <Typography>{row.original.country}</Typography>
+            <Typography>${row.original.type}</Typography>
           </div>
         )
       }),
-      columnHelper.accessor('order', {
+      columnHelper.accessor('orders_count', {
         header: 'Orders',
-        cell: ({ row }) => <Typography>{row.original.order}</Typography>
+        cell: ({ row }) => <Typography>{row.original.orders_count}</Typography>
       }),
       columnHelper.accessor('totalSpent', {
         header: 'Total Spent',
         cell: ({ row }) => (
           <Typography className='font-medium' color='text.primary'>
-            ${row.original.totalSpent.toLocaleString()}
+            ${row.original.type}
           </Typography>
         )
+      }),
+      columnHelper.accessor('action', {
+        header: 'Actions',
+        cell: ({ row }) => (
+          <div className='flex items-center'>
+            {/* <IconButton component={Link} href={`/${locale}/apps/ecommerce/products/update/${row.original.id}`}>
+              <i className='tabler-edit text-textSecondary' />
+            </IconButton> */}
+            <OptionMenu
+              iconButtonProps={{ size: 'medium' }}
+              iconClassName='text-textSecondary'
+              options={[
+                {
+                  text: 'Delete Customer',
+                  icon: 'tabler-trash',
+                  menuItemProps: { onClick: () => setData(data?.filter(product => product.id !== row.original.id)) },
+                  handleClick: async () => {
+                    // const headers = await getClientAuthHeaders()
+                    // axios
+                    //   .delete(api`dashboard/product/${row.original.id}`, { headers })
+                    //   .then(() => {
+                    //     refreshProducts()
+                    //     toast.success('Product deleted successfully!')
+                    //   })
+                    //   .catch(() => {
+                    //     toast.error('Unexpected error')
+                    //   })
+                  }
+                },
+                { text: 'Deactivate Customer', icon: 'tabler-download' },
+
+                { text: 'Move to corporates', icon: 'tabler-copy' }
+              ]}
+            />
+          </div>
+        ),
+        enableSorting: false
       })
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -218,7 +266,7 @@ const CustomerListTable = ({ customerData }: { customerData?: Customer[] }) => {
   )
 
   const table = useReactTable({
-    data: data as Customer[],
+    data: customerList ?? [],
     columns,
     filterFns: {
       fuzzy: fuzzyFilter

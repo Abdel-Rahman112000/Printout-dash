@@ -13,7 +13,7 @@ import Grid from '@mui/material/Grid'
 // Component Imports
 import CustomTabList from '@core/components/mui/TabList'
 
-const CustomerRight = ({ tabContentList }: { tabContentList: { [key: string]: ReactElement } }) => {
+const CustomerRightIndividuals = ({ tabContentList }: { tabContentList: { [key: string]: ReactElement } }) => {
   // States
   const [activeTab, setActiveTab] = useState('overview')
 
@@ -35,12 +35,12 @@ const CustomerRight = ({ tabContentList }: { tabContentList: { [key: string]: Re
                 label='Address & Billing'
                 iconPosition='start'
               />
-              <Tab
+              {/* <Tab
                 icon={<i className='tabler-bell' />}
                 value='notifications'
                 label='Notifications'
                 iconPosition='start'
-              />
+              /> */}
             </CustomTabList>
           </Grid>
           <Grid item xs={12}>
@@ -54,4 +54,4 @@ const CustomerRight = ({ tabContentList }: { tabContentList: { [key: string]: Re
   )
 }
 
-export default CustomerRight
+export default CustomerRightIndividuals

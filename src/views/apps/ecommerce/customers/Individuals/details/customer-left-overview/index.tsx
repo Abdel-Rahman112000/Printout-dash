@@ -8,7 +8,7 @@ import type { Customer } from '@/types/apps/ecommerceTypes'
 import CustomerDetails from './CustomerDetails'
 import CustomerPlan from './CustomerPlan'
 
-const CustomerLeftOverview = ({ customerData }: { customerData?: Customer }) => {
+const CustomerLeftOverviewIndividuals = ({ customerData }: { customerData?: Customer }) => {
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
@@ -21,4 +21,4 @@ const CustomerLeftOverview = ({ customerData }: { customerData?: Customer }) => 
   )
 }
 
-export default CustomerLeftOverview
+export default CustomerLeftOverviewIndividuals
