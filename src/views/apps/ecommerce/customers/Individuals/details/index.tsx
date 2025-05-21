@@ -37,18 +37,18 @@ const CustomerDetails = ({ customerData, customerId }: { customerData?: Customer
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
-        <CustomerDetailHeaderIndividuals customerId={customerId} />
+        <CustomerDetailHeaderIndividuals customerId={customerId} customerData={customerData} />
       </Grid>
       <Grid item xs={12} md={4}>
         <CustomerLeftOverviewIndividuals customerData={customerData} />
       </Grid>
       <Grid item xs={12} md={8}>
         <CustomerRightIndividuals
-          customerData={customerData}
+          // customerData={customerData}
           tabContentList={{
             overview: <OverViewTab customerData={customerData} />,
-            security: <SecurityTab customerData={customerData} />,
-            addressBilling: <AddressBillingTab customerData={customerData} />
+            security: <SecurityTab />,
+            addressBilling: <AddressBillingTab />
           }}
         />
       </Grid>

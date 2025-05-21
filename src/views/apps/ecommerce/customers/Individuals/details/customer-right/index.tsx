@@ -12,14 +12,9 @@ import Grid from '@mui/material/Grid'
 
 // Component Imports
 import CustomTabList from '@core/components/mui/TabList'
-import type { Customer } from '@/types/apps/ecommerceTypes'
+// import type { Customer } from '@/types/apps/ecommerceTypes'
 
-const CustomerRightIndividuals = ({
-  tabContentList,
-  customerData
-}: {
-  tabContentList: { [key: string]: ReactElement; customerData?: Customer }
-}) => {
+const CustomerRightIndividuals = ({ tabContentList }: { tabContentList: { [key: string]: ReactElement } }) => {
   // States
   const [activeTab, setActiveTab] = useState('overview')
 
@@ -27,7 +22,7 @@ const CustomerRightIndividuals = ({
     setActiveTab(value)
   }
 
-  console.log(customerData, '0customerDatacustomerData')
+  // console.log(customerData, '0customerDatacustomerData')
 
   return (
     <>

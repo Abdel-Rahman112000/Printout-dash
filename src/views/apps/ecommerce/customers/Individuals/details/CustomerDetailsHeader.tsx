@@ -30,6 +30,18 @@ const CustomerDetailHeader = ({ customerId }: { customerId: string }) => {
         dialog={ConfirmationDialog}
         dialogProps={{ type: 'delete-customer' }}
       />
+      <OpenDialogOnElementClick
+        element={Button}
+        elementProps={buttonProps('Deactivate', 'error', 'tonal')}
+        dialog={ConfirmationDialog}
+        dialogProps={{ type: 'delete-customer' }}
+      />
+      {/* <OpenDialogOnElementClick
+        element={Button}
+        elementProps={buttonProps('Mark as unconfirmed', 'error', 'tonal')}
+        dialog={ConfirmationDialog}
+        dialogProps={{ type: 'delete-customer' }}
+      /> */}
     </div>
   )
 }
