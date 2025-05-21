@@ -77,8 +77,6 @@ const EditCustomerDrawer = (props: Props) => {
     }
   }, [customerData, reset])
 
-  const params = useParams()
-
   // Assume you have an update mutation hook (you should implement one similar to create)
   const { mutate: mutateUpdateClient } = useUpdateClient()
 
@@ -108,6 +106,8 @@ const EditCustomerDrawer = (props: Props) => {
         onSuccess: (res: any) => {
           queryClient.invalidateQueries({ queryKey: ['clients'] })
           handleClose()
+          window.location.reload()
+
           toast.success(res?.message || 'Customer Updated successfully')
         },
         onError: (err: any) => {

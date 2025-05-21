@@ -85,7 +85,16 @@ const CustomerDetails = ({ customerData }: { customerData?: Customer }) => {
               <Typography color='text.primary' className='font-medium'>
                 Status:
               </Typography>
-              <Chip label='Active' variant='tonal' color='success' size='small' />
+              <Chip
+                label={
+                  customerData?.is_active === -1 ? 'Not Active' : customerData?.is_active === 1 ? ' Active' : 'Unknown'
+                }
+                color={
+                  customerData?.is_active === -1 ? 'warning' : customerData?.is_active === 1 ? 'success' : 'default'
+                }
+                variant='tonal'
+                size='small'
+              />{' '}
             </div>
             <div className='flex items-center gap-1'>
               <Typography color='text.primary' className='font-medium'>

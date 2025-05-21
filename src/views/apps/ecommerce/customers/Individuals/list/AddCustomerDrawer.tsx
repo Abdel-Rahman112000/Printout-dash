@@ -6,7 +6,6 @@ import Button from '@mui/material/Button'
 import Drawer from '@mui/material/Drawer'
 import Divider from '@mui/material/Divider'
 import IconButton from '@mui/material/IconButton'
-import Switch from '@mui/material/Switch'
 import Typography from '@mui/material/Typography'
 
 // Third-party Imports
@@ -16,7 +15,7 @@ import { useForm, Controller } from 'react-hook-form'
 // Type Imports
 import { toast } from 'react-toastify'
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 
 import type { Customer } from '@/types/apps/ecommerceTypes'
 
@@ -24,7 +23,6 @@ import type { Customer } from '@/types/apps/ecommerceTypes'
 import CustomTextField from '@core/components/mui/TextField'
 import useCreateNewClient from '@/utils/api/Customers/postNewCustomers'
 import { getClientAuthHeaders } from '@/utils/headers/authClient'
-import { useClients } from '@/utils/api/Customers/getCustomers'
 
 type Props = {
   open: boolean
@@ -108,7 +106,7 @@ const AddCustomerDrawer = (props: Props) => {
           resetForm()
           setFormData(initialData)
           handleClose()
-          window.location.reload()
+          // window.location.reload()
           toast.success(res?.message || 'Customer added successfully')
         },
         onError: (err: any) => {
@@ -117,26 +115,6 @@ const AddCustomerDrawer = (props: Props) => {
       }
     )
   }
-
-  // const onSubmit = (data: FormValidateType) => {
-  //   const newData: Customer = {
-  //     id: (customerData?.length ?? 0) + 1,
-  //     user_name: data.fullName,
-  //     customerId: customerData?.[Math.floor(Math.random() * (customerData?.length || 1))]?.customerId ?? '1',
-  //     email: data.email,
-  //     country: country[data.country]?.country ?? '',
-  //     countryCode: 'st',
-  //     countryFlag: `/images/cards/${data.country}.png`,
-  //     order: Math.floor(Math.random() * 1000) + 1,
-  //     totalSpent: Math.floor(Math.random() * (1000000 - 100) + 100) / 100,
-  //     avatar: `/images/avatars/${Math.floor(Math.random() * 8) + 1}.png`
-  //   }
-
-  //   setData([...(customerData ?? []), newData])
-  //   resetForm()
-  //   setFormData(initialData)
-  //   handleClose()
-  // }
 
   const handleReset = () => {
     handleClose()
