@@ -1,4 +1,8 @@
+'use client'
+
 // MUI Imports
+import { useState } from 'react'
+
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Chip from '@mui/material/Chip'
@@ -14,6 +18,7 @@ import type { Customer } from '@/types/apps/ecommerceTypes'
 import CustomAvatar from '@core/components/mui/Avatar'
 import EditUserInfo from '@components/dialogs/edit-user-info'
 import OpenDialogOnElementClick from '@components/dialogs/OpenDialogOnElementClick'
+import EditCustomerDrawer from './EditCustomerDrawer'
 
 const CustomerDetails = ({ customerData }: { customerData?: Customer }) => {
   // Vars
@@ -22,12 +27,19 @@ const CustomerDetails = ({ customerData }: { customerData?: Customer }) => {
     children: 'Edit Details'
   }
 
+  const [customerUserOpen, setCustomerUserOpen] = useState(false)
+
   return (
     <Card>
       <CardContent className='flex flex-col pbs-12 gap-6'>
         <div className='flex flex-col justify-self-center items-center gap-6'>
           <div className='flex flex-col items-center gap-4'>
-            <CustomAvatar src={customerData?.media[0]} variant='rounded' alt='Customer Avatar' size={120} />
+            <CustomAvatar
+              src={customerData?.media?.[0]?.original_url}
+              variant='rounded'
+              alt='Customer Avatar'
+              size={120}
+            />
             <div className='flex flex-col items-center text-center'>
               <Typography variant='h5'>{customerData?.user_name}</Typography>
               <Typography>Customer ID #{customerData?.id}</Typography>
@@ -48,7 +60,7 @@ const CustomerDetails = ({ customerData }: { customerData?: Customer }) => {
                 <i className='tabler-currency-dollar' />
               </CustomAvatar>
               <div>
-                <Typography variant='h5'>${customerData?.totalSpent}</Typography>
+                <Typography variant='h5'>${customerData?.orders_sum_total_price}</Typography>
                 <Typography>Spent</Typography>
               </div>
             </div>
@@ -62,7 +74,6 @@ const CustomerDetails = ({ customerData }: { customerData?: Customer }) => {
               <Typography color='text.primary' className='font-medium'>
                 Username:{customerData?.user_name}
               </Typography>
-              <Typography>{customerData?.customer}</Typography>
             </div>
             <div className='flex items-center gap-1'>
               <Typography color='text.primary' className='font-medium'>
@@ -82,15 +93,24 @@ const CustomerDetails = ({ customerData }: { customerData?: Customer }) => {
               </Typography>
               <Typography>{customerData?.phone}</Typography>
             </div>
-            <div className='flex items-center gap-1'>
-              <Typography color='text.primary' className='font-medium'>
-                Country:
-              </Typography>
-              <Typography>{customerData?.country}</Typography>
-            </div>
           </div>
         </div>
-        <OpenDialogOnElementClick element={Button} elementProps={buttonProps} dialog={EditUserInfo} />
+        {/* <OpenDialogOnElementClick element={Button} elementProps={buttonProps} dialog={EditUserInfo} /> */}
+        <Button
+          variant='contained'
+          color='primary'
+          className='max-sm:is-full'
+          onClick={() => setCustomerUserOpen(!customerUserOpen)}
+        >
+          Edit Details
+        </Button>
+        <EditCustomerDrawer
+          customerData={customerData}
+          open={customerUserOpen}
+          handleClose={() => setCustomerUserOpen(!customerUserOpen)}
+          // setData={setData}
+          // customerData={data}
+        />
       </CardContent>
     </Card>
   )

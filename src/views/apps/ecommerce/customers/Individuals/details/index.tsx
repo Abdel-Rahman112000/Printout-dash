@@ -27,12 +27,11 @@ const AddressBillingTab = dynamic(
 )
 
 // Vars
-const tabContentList = (): { [key: string]: ReactElement } => ({
-  overview: <OverViewTab />,
-  security: <SecurityTab />,
-  addressBilling: <AddressBillingTab />,
-  notifications: <NotificationsTab />
-})
+// const tabContentList = (): { [key: string]: ReactElement } => ({
+//   overview: <OverViewTab />,
+//   security: <SecurityTab />,
+//   addressBilling: <AddressBillingTab />
+// })
 
 const CustomerDetails = ({ customerData, customerId }: { customerData?: Customer; customerId: string }) => {
   return (
@@ -44,7 +43,14 @@ const CustomerDetails = ({ customerData, customerId }: { customerData?: Customer
         <CustomerLeftOverviewIndividuals customerData={customerData} />
       </Grid>
       <Grid item xs={12} md={8}>
-        <CustomerRightIndividuals tabContentList={tabContentList()} />
+        <CustomerRightIndividuals
+          customerData={customerData}
+          tabContentList={{
+            overview: <OverViewTab customerData={customerData} />,
+            security: <SecurityTab customerData={customerData} />,
+            addressBilling: <AddressBillingTab customerData={customerData} />
+          }}
+        />
       </Grid>
     </Grid>
   )

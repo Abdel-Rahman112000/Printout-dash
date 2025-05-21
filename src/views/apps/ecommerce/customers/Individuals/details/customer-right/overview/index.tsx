@@ -7,6 +7,7 @@ import OrderListTable from './OrderListTable'
 
 // Data Imports
 import { getStatisticsData, getEcommerceData } from '@/app/server/actions'
+import type { Customer } from '@/types/apps/ecommerceTypes'
 
 /**
  * ! If you need data using an API call, uncomment the below API code, update the `process.env.API_URL` variable in the
@@ -44,18 +45,20 @@ import { getStatisticsData, getEcommerceData } from '@/app/server/actions'
   return res.json()
 } */
 
-const Overview = async () => {
+const Overview = async ({ customerData }: { customerData?: Customer }) => {
   // Vars
   const data = await getStatisticsData()
   const tableData = await getEcommerceData()
 
+  console.log(customerData, 'tabContentListtabContentList')
+
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
-        <CustomerStatisticsCard customerStatData={data?.customerStats} />
+        <CustomerStatisticsCard customerStatData={data?.customerStats} customerData={customerData} />
       </Grid>
       <Grid item xs={12}>
-        <OrderListTable orderData={tableData?.orderData} />
+        <OrderListTable orderData={tableData?.orderData} customerData={customerData?.orders} />
       </Grid>
     </Grid>
   )

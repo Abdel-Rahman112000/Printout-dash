@@ -38,6 +38,10 @@ import type { RankingInfo } from '@tanstack/match-sorter-utils'
 
 import { IconButton, Menu, MenuItem } from '@mui/material'
 
+import axios from 'axios'
+
+import { toast } from 'react-toastify'
+
 import type { ThemeColor } from '@core/types'
 import type { Customer } from '@/types/apps/ecommerceTypes'
 import type { Locale } from '@configs/i18n'
@@ -49,7 +53,6 @@ import CustomTextField from '@core/components/mui/TextField'
 import TablePaginationComponent from '@components/TablePaginationComponent'
 
 // Util Imports
-import { getInitials } from '@/utils/getInitials'
 import { getLocalizedUrl } from '@/utils/i18n'
 
 // Style Imports
@@ -57,6 +60,8 @@ import tableStyles from '@core/styles/table.module.css'
 import OptionMenu from '@/@core/components/option-menu'
 import { useClients } from '@/utils/api/Customers/getCustomers'
 import type { Clients, GetClientsRoot } from '@/types/api/common/Clients'
+import { getClientAuthHeaders } from '@/utils/headers/authClient'
+import { api } from '@/utils/api'
 
 declare module '@tanstack/table-core' {
   interface FilterFns {
@@ -144,8 +149,9 @@ const CustomerListTable = ({ customerData }: { customerData?: Customer[] }) => {
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
   const [globalFilter, setGlobalFilter] = useState('')
-  const [data, setData] = useState(...[customerData])
-  const { data: customerList, isLoading, error } = useClients()
+  const { data: customerList, isLoading, error, refetch } = useClients()
+
+  const [data, setData] = useState(...[customerList])
 
   console.log('customerData', customerList)
 
@@ -180,7 +186,12 @@ const CustomerListTable = ({ customerData }: { customerData?: Customer[] }) => {
         header: 'Customers Individuals',
         cell: ({ row }) => (
           <div className='flex items-center gap-3'>
-            {getAvatar({ avatar: row.original.media, customer: row.original.customer })}
+            <img
+              src={row.original.media?.[0]?.original_url}
+              width={38}
+              height={38}
+              className='rounded bg-actionHover'
+            />{' '}
             <div className='flex flex-col items-start'>
               <Typography
                 component={Link}
@@ -202,24 +213,15 @@ const CustomerListTable = ({ customerData }: { customerData?: Customer[] }) => {
         header: 'Customer Id',
         cell: ({ row }) => <Typography color='text.primary'>#{row.original.id}</Typography>
       }),
-      columnHelper.accessor('country', {
-        header: 'Country',
-        cell: ({ row }) => (
-          <div className='flex items-center gap-2'>
-            <img src={row.original.countryFlag} height={22} />
-            <Typography>${row.original.type}</Typography>
-          </div>
-        )
-      }),
       columnHelper.accessor('orders_count', {
         header: 'Orders',
         cell: ({ row }) => <Typography>{row.original.orders_count}</Typography>
       }),
-      columnHelper.accessor('totalSpent', {
+      columnHelper.accessor('orders_sum_total_price', {
         header: 'Total Spent',
         cell: ({ row }) => (
           <Typography className='font-medium' color='text.primary'>
-            ${row.original.type}
+            ${row.original.orders_sum_total_price}
           </Typography>
         )
       }),
@@ -239,19 +241,37 @@ const CustomerListTable = ({ customerData }: { customerData?: Customer[] }) => {
                   icon: 'tabler-trash',
                   menuItemProps: { onClick: () => setData(data?.filter(product => product.id !== row.original.id)) },
                   handleClick: async () => {
-                    // const headers = await getClientAuthHeaders()
-                    // axios
-                    //   .delete(api`dashboard/product/${row.original.id}`, { headers })
-                    //   .then(() => {
-                    //     refreshProducts()
-                    //     toast.success('Product deleted successfully!')
-                    //   })
-                    //   .catch(() => {
-                    //     toast.error('Unexpected error')
-                    //   })
+                    const headers = await getClientAuthHeaders()
+
+                    axios
+                      .delete(api`dashboard/clients/${row.original.id}`, { headers })
+                      .then(() => {
+                        refetch()
+                        toast.success('client deleted successfully!')
+                      })
+                      .catch(() => {
+                        toast.error('Unexpected error')
+                      })
                   }
                 },
-                { text: 'Deactivate Customer', icon: 'tabler-download' },
+                {
+                  text: 'Deactivate Customer',
+                  icon: 'tabler-download',
+                  menuItemProps: { onClick: () => setData(data?.filter(product => product.id !== row.original.id)) },
+                  handleClick: async () => {
+                    const headers = await getClientAuthHeaders()
+
+                    axios
+                      .post(api`dashboard/clients/${row.original.id}/activate`, { status: 1 }, { headers })
+                      .then(() => {
+                        refetch()
+                        toast.success('Deactivate Customer successfully!')
+                      })
+                      .catch(() => {
+                        toast.error('Unexpected error')
+                      })
+                  }
+                },
 
                 { text: 'Move to corporates', icon: 'tabler-copy' }
               ]}
@@ -294,19 +314,19 @@ const CustomerListTable = ({ customerData }: { customerData?: Customer[] }) => {
     getFacetedMinMaxValues: getFacetedMinMaxValues()
   })
 
-  const getAvatar = (params: Pick<Customer, 'avatar' | 'customer'>) => {
-    const { avatar, customer } = params
+  // const getAvatar = (params: Pick<Customer, 'avatar' | 'customer'>) => {
+  //   const { avatar, customer } = params
 
-    if (avatar) {
-      return <CustomAvatar src={avatar} skin='light' size={34} />
-    } else {
-      return (
-        <CustomAvatar skin='light' size={34}>
-          {getInitials(customer as string)}
-        </CustomAvatar>
-      )
-    }
-  }
+  //   if (avatar) {
+  //     return <CustomAvatar src={avatar} skin='light' size={34} />
+  //   } else {
+  //     return (
+  //       <CustomAvatar skin='light' size={34}>
+  //         {getInitials(customer as string)}
+  //       </CustomAvatar>
+  //     )
+  //   }
+  // }
 
   return (
     <>
@@ -418,7 +438,7 @@ const CustomerListTable = ({ customerData }: { customerData?: Customer[] }) => {
         open={customerUserOpen}
         handleClose={() => setCustomerUserOpen(!customerUserOpen)}
         setData={setData}
-        customerData={data}
+        // customerData={data}
       />
     </>
   )

@@ -12,14 +12,22 @@ import Grid from '@mui/material/Grid'
 
 // Component Imports
 import CustomTabList from '@core/components/mui/TabList'
+import type { Customer } from '@/types/apps/ecommerceTypes'
 
-const CustomerRightIndividuals = ({ tabContentList }: { tabContentList: { [key: string]: ReactElement } }) => {
+const CustomerRightIndividuals = ({
+  tabContentList,
+  customerData
+}: {
+  tabContentList: { [key: string]: ReactElement; customerData?: Customer }
+}) => {
   // States
   const [activeTab, setActiveTab] = useState('overview')
 
   const handleChange = (event: SyntheticEvent, value: string) => {
     setActiveTab(value)
   }
+
+  console.log(customerData, '0customerDatacustomerData')
 
   return (
     <>

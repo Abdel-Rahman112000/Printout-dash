@@ -19,10 +19,41 @@ export interface Clients {
   cfm_token?: string
   global_id: string
   type: string
-  tax: any
+  tax?: string
+  is_active: number
+  favorites_count: number
+  carts_count: number
   orders_count: number
+  orders_sum_total_price: any
   pictures: any[]
   media: Medum[]
+  orders: Order[]
+}
+export interface Order {
+  id: number
+  total_price: string
+  method: string
+  payment: number
+  address: string
+  latitude: string
+  longitude: string
+  delivery_type: any
+  delivery_id: any
+  client_id: number
+  last_status: any
+  created_at: string
+  updated_at: string
+  status: number
+  paymob_price: string
+  cach_price: string
+  order_arrive_at: any
+  delivery_within: number
+  phone: any
+  email: any
+  same_date: number
+  client_rated: boolean
+  delivery_rated: boolean
+  days_to_arrive: any
 }
 
 export interface Medum {

@@ -35,7 +35,7 @@ import type { RankingInfo } from '@tanstack/match-sorter-utils'
 
 // Type Imports
 import type { ThemeColor } from '@core/types'
-import type { OrderType } from '@/types/apps/ecommerceTypes'
+import type { Customer, OrderType } from '@/types/apps/ecommerceTypes'
 import type { Locale } from '@configs/i18n'
 
 // Component Imports
@@ -81,9 +81,10 @@ export const statusChipColor: { [key: string]: StatusChipColorType } = {
   Dispatched: { color: 'warning' }
 }
 
-type ECommerceOrderTypeWithAction = OrderType & {
-  action?: string
-}
+type ECommerceOrderTypeWithAction = Customer &
+  OrderType & {
+    action?: string
+  }
 
 const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
   // Rank the item
@@ -130,45 +131,63 @@ const DebouncedInput = ({
 // Column Definitions
 const columnHelper = createColumnHelper<ECommerceOrderTypeWithAction>()
 
-const OrderListTable = ({ orderData }: { orderData?: OrderType[] }) => {
+const OrderListTable = ({ orderData, customerData }: { orderData?: OrderType[]; customerData?: Customer[] }) => {
   // States
   const [rowSelection, setRowSelection] = useState({})
-  const [data, setData] = useState(...[orderData])
+  const [data, setData] = useState(customerData)
   const [globalFilter, setGlobalFilter] = useState('')
+
+  console.log('OrderListTable', data)
 
   // Hooks
   const { lang: locale } = useParams()
 
   const columns = useMemo<ColumnDef<ECommerceOrderTypeWithAction, any>[]>(
     () => [
-      columnHelper.accessor('order', {
+      columnHelper.accessor('orders', {
         header: 'order',
         cell: ({ row }) => (
           <Typography
             component={Link}
-            href={getLocalizedUrl(`/apps/ecommerce/orders/details/${row.original.order}`, locale as Locale)}
+            href={getLocalizedUrl(`/apps/ecommerce/orders/details/${row.original?.id}`, locale as Locale)}
             color='primary'
-          >{`#${row.original.order}`}</Typography>
+          >{`#${row.original?.id}`}</Typography>
         )
       }),
-      columnHelper.accessor('date', {
+      columnHelper.accessor('created_at', {
         header: 'Date',
-        cell: ({ row }) => <Typography>{`${new Date(row.original.date).toDateString()}`}</Typography>
+        cell: ({ row }) => <Typography>{`${new Date(row.original.created_at).toDateString()}`}</Typography>
       }),
       columnHelper.accessor('status', {
         header: 'Status',
         cell: ({ row }) => (
           <Chip
-            label={row.original.status}
-            color={statusChipColor[row.original.status].color}
+            label={
+              row.original.status === 0
+                ? 'Cancelled'
+                : row.original.status === -1
+                  ? 'Pending'
+                  : row.original.status === 1
+                    ? 'Delivered'
+                    : 'Unknown'
+            }
+            color={
+              row.original.status === 0
+                ? 'secondary'
+                : row.original.status === -1
+                  ? 'warning'
+                  : row.original.status === 1
+                    ? 'success'
+                    : 'default'
+            }
             variant='tonal'
             size='small'
           />
         )
       }),
-      columnHelper.accessor('spent', {
+      columnHelper.accessor('total_price', {
         header: 'Spent',
-        cell: ({ row }) => <Typography>${row.original.spent}</Typography>
+        cell: ({ row }) => <Typography>${row.original.total_price}</Typography>
       }),
       columnHelper.accessor('action', {
         header: 'Actions',
@@ -181,7 +200,7 @@ const OrderListTable = ({ orderData }: { orderData?: OrderType[] }) => {
                 {
                   text: 'View',
                   icon: 'tabler-eye',
-                  href: getLocalizedUrl(`/apps/ecommerce/orders/details/${row.original.order}`, locale as Locale),
+                  href: getLocalizedUrl(`/apps/ecommerce/orders/details/${row.original.email}`, locale as Locale),
                   linkProps: { className: 'flex items-center is-full plb-1.5 pli-4' }
                 },
                 {
@@ -204,7 +223,7 @@ const OrderListTable = ({ orderData }: { orderData?: OrderType[] }) => {
   )
 
   const table = useReactTable({
-    data: data as OrderType[],
+    data: data ?? [],
     columns,
     filterFns: {
       fuzzy: fuzzyFilter

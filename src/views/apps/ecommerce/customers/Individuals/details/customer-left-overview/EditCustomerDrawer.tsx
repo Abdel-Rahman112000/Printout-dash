@@ -1,36 +1,31 @@
-// React Imports
-import { useState } from 'react'
+import { useEffect } from 'react'
 
-// MUI Imports
+import { useParams } from 'next/navigation'
+
+import { useForm, Controller } from 'react-hook-form'
+
 import Button from '@mui/material/Button'
 import Drawer from '@mui/material/Drawer'
 import Divider from '@mui/material/Divider'
 import IconButton from '@mui/material/IconButton'
-import Switch from '@mui/material/Switch'
 import Typography from '@mui/material/Typography'
-
-// Third-party Imports
 import PerfectScrollbar from 'react-perfect-scrollbar'
-import { useForm, Controller } from 'react-hook-form'
-
-// Type Imports
 import { toast } from 'react-toastify'
+import { useQueryClient } from '@tanstack/react-query'
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import CustomTextField from '@core/components/mui/TextField'
 
 import type { Customer } from '@/types/apps/ecommerceTypes'
-
-// Component Imports
-import CustomTextField from '@core/components/mui/TextField'
-import useCreateNewClient from '@/utils/api/Customers/postNewCustomers'
 import { getClientAuthHeaders } from '@/utils/headers/authClient'
-import { useClients } from '@/utils/api/Customers/getCustomers'
+import useUpdateClient from '@/utils/api/Customers/updateCustomers'
+// Assuming you have an update API hook like this (you need to implement this):
+// import useUpdateClient from '@/utils/api/Customers/updateCustomer'
 
 type Props = {
   open: boolean
   handleClose: () => void
-  setData: (data: Customer[]) => void
-  customerData?: Customer[]
+  //   setData: (data: Customer[]) => void
+  customerData?: Customer // single customer, not array
 }
 
 export type FormValidateType = {
@@ -44,32 +39,14 @@ export type FormValidateType = {
   type: string
 }
 
-type FormNonValidateType = {
-  phone: string
-  company_name: string
-  commerce_registration: string
-  password: string
-  tax: string
-}
-
-const initialData: FormNonValidateType = {
-  phone: '',
-  company_name: '',
-  commerce_registration: '',
-  password: '',
-  tax: ''
-}
-
-const AddCustomerDrawer = (props: Props) => {
-  const { open, handleClose } = props
-
-  const [formData, setFormData] = useState<FormNonValidateType>(initialData)
+const EditCustomerDrawer = (props: Props) => {
+  const { open, handleClose, customerData } = props
+  const queryClient = useQueryClient()
 
   const {
     control,
-    reset: resetForm,
+    reset,
     handleSubmit,
-
     formState: { errors }
   } = useForm<FormValidateType>({
     defaultValues: {
@@ -78,18 +55,43 @@ const AddCustomerDrawer = (props: Props) => {
       phone: '',
       company_name: '',
       commerce_registration: '',
-      password: '',
+      password: '', // optional on edit
+      type: 'individual',
       tax: ''
     }
   })
 
-  const { mutate: mutateCreateNewClient } = useCreateNewClient()
-  const queryClient = useQueryClient()
+  // Reset form whenever customerData changes or drawer opens
+  useEffect(() => {
+    if (customerData) {
+      reset({
+        user_name: customerData.user_name || '',
+        email: customerData.email || '',
+        phone: customerData.phone || '',
+        company_name: customerData.company_name || '',
+        commerce_registration: customerData.commerce_registration || '',
+        password: '', // blank for edit
+        type: customerData.type || 'individual',
+        tax: customerData.tax || ''
+      })
+    }
+  }, [customerData, reset])
+
+  const params = useParams()
+
+  // Assume you have an update mutation hook (you should implement one similar to create)
+  const { mutate: mutateUpdateClient } = useUpdateClient()
 
   const onSubmit = async (data: FormValidateType) => {
+    if (!customerData?.id) {
+      toast.error('Customer ID is missing.')
+
+      return
+    }
+
     const headers = await getClientAuthHeaders()
 
-    const createNewClients = {
+    const editClients = {
       user_name: data?.user_name,
       email: data?.email,
       phone: data?.phone,
@@ -100,16 +102,13 @@ const AddCustomerDrawer = (props: Props) => {
       tax: data?.tax
     }
 
-    mutateCreateNewClient(
-      { headers: headers, payload: createNewClients },
+    mutateUpdateClient(
+      { id: customerData?.id, headers: headers, payload: editClients },
       {
         onSuccess: (res: any) => {
           queryClient.invalidateQueries({ queryKey: ['clients'] })
-          resetForm()
-          setFormData(initialData)
           handleClose()
-          window.location.reload()
-          toast.success(res?.message || 'Customer added successfully')
+          toast.success(res?.message || 'Customer Updated successfully')
         },
         onError: (err: any) => {
           toast.error(err?.response?.data?.message || 'Something went wrong')
@@ -118,30 +117,9 @@ const AddCustomerDrawer = (props: Props) => {
     )
   }
 
-  // const onSubmit = (data: FormValidateType) => {
-  //   const newData: Customer = {
-  //     id: (customerData?.length ?? 0) + 1,
-  //     user_name: data.fullName,
-  //     customerId: customerData?.[Math.floor(Math.random() * (customerData?.length || 1))]?.customerId ?? '1',
-  //     email: data.email,
-  //     country: country[data.country]?.country ?? '',
-  //     countryCode: 'st',
-  //     countryFlag: `/images/cards/${data.country}.png`,
-  //     order: Math.floor(Math.random() * 1000) + 1,
-  //     totalSpent: Math.floor(Math.random() * (1000000 - 100) + 100) / 100,
-  //     avatar: `/images/avatars/${Math.floor(Math.random() * 8) + 1}.png`
-  //   }
-
-  //   setData([...(customerData ?? []), newData])
-  //   resetForm()
-  //   setFormData(initialData)
-  //   handleClose()
-  // }
-
   const handleReset = () => {
     handleClose()
-    resetForm()
-    setFormData(initialData)
+    reset()
   }
 
   return (
@@ -154,7 +132,7 @@ const AddCustomerDrawer = (props: Props) => {
       sx={{ '& .MuiDrawer-paper': { width: { xs: 300, sm: 400 } } }}
     >
       <div className='flex items-center justify-between pli-6 plb-5'>
-        <Typography variant='h5'>Add a Customer</Typography>
+        <Typography variant='h5'>Edit a Customer</Typography>
         <IconButton size='small' onClick={handleReset}>
           <i className='tabler-x text-2xl' />
         </IconButton>
@@ -162,7 +140,7 @@ const AddCustomerDrawer = (props: Props) => {
       <Divider />
       <PerfectScrollbar options={{ wheelPropagation: false, suppressScrollX: true }}>
         <div className='p-6'>
-          <form onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-5'>
+          <form className='flex flex-col gap-5' onSubmit={handleSubmit(onSubmit)}>
             <Typography color='text.primary' className='font-medium'>
               Basic Information
             </Typography>
@@ -170,21 +148,22 @@ const AddCustomerDrawer = (props: Props) => {
             <Controller
               name='user_name'
               control={control}
-              rules={{ required: true }}
+              rules={{ required: 'Name is required' }}
               render={({ field }) => (
                 <CustomTextField
                   {...field}
                   fullWidth
                   label='Name'
                   placeholder='John Doe'
-                  {...(errors.user_name && { error: true, helperText: 'This field is required.' })}
+                  error={!!errors.user_name}
+                  helperText={errors.user_name?.message}
                 />
               )}
             />
             <Controller
               name='email'
               control={control}
-              rules={{ required: true }}
+              rules={{ required: 'Email is required' }}
               render={({ field }) => (
                 <CustomTextField
                   {...field}
@@ -192,58 +171,60 @@ const AddCustomerDrawer = (props: Props) => {
                   type='email'
                   label='Email'
                   placeholder='johndoe@gmail.com'
-                  {...(errors.email && { error: true, helperText: 'This field is required.' })}
+                  error={!!errors.email}
+                  helperText={errors.email?.message}
                 />
               )}
             />
-
             <Controller
               name='phone'
               control={control}
-              rules={{ required: true }}
+              rules={{ required: 'Phone is required' }}
               render={({ field }) => (
                 <CustomTextField
                   {...field}
                   fullWidth
                   label='Phone'
                   placeholder='+(123) 456-7890'
-                  {...(errors.phone && { error: true, helperText: 'This field is required.' })}
+                  error={!!errors.phone}
+                  helperText={errors.phone?.message}
                 />
               )}
             />
-
             <Controller
               name='company_name'
               control={control}
-              rules={{ required: true }}
+              rules={{ required: 'Company name is required' }}
               render={({ field }) => (
                 <CustomTextField
                   {...field}
                   fullWidth
                   label='Company Name'
                   placeholder='Tech Inc.'
-                  {...(errors.company_name && { error: true, helperText: 'This field is required.' })}
+                  error={!!errors.company_name}
+                  helperText={errors.company_name?.message}
                 />
               )}
             />
             <Controller
               name='commerce_registration'
               control={control}
-              rules={{ required: true }}
+              rules={{ required: 'Commerce registration is required' }}
               render={({ field }) => (
                 <CustomTextField
                   {...field}
                   fullWidth
                   label='Commerce Registration'
                   placeholder='CR123456'
-                  {...(errors.commerce_registration && { error: true, helperText: 'This field is required.' })}
+                  error={!!errors.commerce_registration}
+                  helperText={errors.commerce_registration?.message}
                 />
               )}
             />
             <Controller
               name='password'
               control={control}
-              rules={{ required: true }}
+              // password is optional on edit, no rules
               render={({ field }) => (
                 <CustomTextField
                   {...field}
@@ -251,47 +232,40 @@ const AddCustomerDrawer = (props: Props) => {
                   label='Password'
                   placeholder='******'
                   type='password'
-                  {...(errors.password && { error: true, helperText: 'This field is required.' })}
+                  error={!!errors.password}
+                  helperText={errors.password?.message}
                 />
               )}
             />
-
             <Controller
               name='type'
               control={control}
               defaultValue='individual'
               render={({ field }) => (
-                <CustomTextField
-                  {...field}
-                  fullWidth
-                  label='Type'
-                  placeholder='individual'
-                  InputProps={{
-                    readOnly: true
-                  }}
-                />
+                <CustomTextField {...field} fullWidth label='Type' InputProps={{ readOnly: true }} />
               )}
             />
             <Controller
               name='tax'
               control={control}
-              rules={{ required: true }}
+              rules={{ required: 'Tax is required' }}
               render={({ field }) => (
                 <CustomTextField
                   {...field}
                   fullWidth
                   label='Tax'
                   placeholder='TAX987654'
-                  {...(errors.tax && { error: true, helperText: 'This field is required.' })}
+                  error={!!errors.tax}
+                  helperText={errors.tax?.message}
                 />
               )}
             />
 
             <div className='flex items-center gap-4'>
               <Button variant='contained' type='submit'>
-                Add
+                Update
               </Button>
-              <Button variant='tonal' color='error' type='reset' onClick={handleReset}>
+              <Button variant='tonal' color='error' type='button' onClick={handleReset}>
                 Discard
               </Button>
             </div>
@@ -302,4 +276,4 @@ const AddCustomerDrawer = (props: Props) => {
   )
 }
 
-export default AddCustomerDrawer
+export default EditCustomerDrawer
