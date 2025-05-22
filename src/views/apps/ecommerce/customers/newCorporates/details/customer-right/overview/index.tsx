@@ -2,12 +2,13 @@
 import Grid from '@mui/material/Grid'
 
 // Component Imports
-import CustomerStatisticsCard from './CustomerStatisticsCard'
 import OrderListTable from './OrderListTable'
 
 // Data Imports
 import { getStatisticsData, getEcommerceData } from '@/app/server/actions'
 import type { Customer } from '@/types/apps/ecommerceTypes'
+import CustomerStatisticsCard from './CustomerStatisticsCardCorporate'
+import CustomerStatisticsCardCorporate from './CustomerStatisticsCardCorporate'
 
 /**
  * ! If you need data using an API call, uncomment the below API code, update the `process.env.API_URL` variable in the
@@ -50,12 +51,12 @@ const Overview = async ({ customerData }: { customerData?: Customer }) => {
   const data = await getStatisticsData()
   const tableData = await getEcommerceData()
 
-  console.log(customerData, 'tabContentListtabContentList')
-
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
-        {customerData && <CustomerStatisticsCard customerStatData={data?.customerStats} customerData={customerData} />}
+        {customerData && (
+          <CustomerStatisticsCardCorporate customerStatData={data?.customerStats} customerData={customerData} />
+        )}
       </Grid>
       <Grid item xs={12}>
         <OrderListTable orderData={tableData?.orderData} customerData={customerData} />

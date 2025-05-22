@@ -10,7 +10,7 @@ import { getClientAuthHeaders } from '@/utils/headers/authClient'
 export const getCustomersCorporates = async (headers: AuthHeaders) => {
   try {
     const res = await axios.get<GetClientsRoot>(api`dashboard/clients`, { headers })
-    const filteredClients = res.data?.data.filter(client => client.type === 'corporate')
+    const filteredClients = res.data?.data.filter(client => client.type === 'company')
 
     return filteredClients
   } catch (error) {

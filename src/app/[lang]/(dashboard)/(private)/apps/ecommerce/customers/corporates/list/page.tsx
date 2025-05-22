@@ -1,6 +1,6 @@
 // Data Imports
 import { getEcommerceData } from '@/app/server/actions'
-import CustomerListTable from '@/views/apps/ecommerce/customers/corporates/list/CustomerListTable'
+import CustomerListTable from '@/views/apps/ecommerce/customers/newCorporates/list/CustomerListTable'
 
 /**
  * ! If you need data using an API call, uncomment the below API code, update the `process.env.API_URL` variable in the

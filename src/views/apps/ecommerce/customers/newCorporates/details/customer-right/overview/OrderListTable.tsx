@@ -137,7 +137,7 @@ const OrderListTable = ({ orderData, customerData }: { orderData?: OrderType[]; 
   const [data, setData] = useState(customerData)
   const [globalFilter, setGlobalFilter] = useState('')
 
-  console.log('customerData', customerData)
+  console.log('OrderListTable', data)
 
   // Hooks
   const { lang: locale } = useParams()
@@ -207,7 +207,7 @@ const OrderListTable = ({ orderData, customerData }: { orderData?: OrderType[]; 
                   text: 'Delete',
                   icon: 'tabler-trash text-[22px]',
                   menuItemProps: {
-                    // onClick: () => setData(data?.orders?.filter(order => order.id !== row.original.id)),
+                    // onClick: () => setData(data?.filter(order => order.id !== row.original.id)),
                     className: 'flex items-center'
                   }
                 }

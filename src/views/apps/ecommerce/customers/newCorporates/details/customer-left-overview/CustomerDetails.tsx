@@ -44,8 +44,8 @@ const CustomerDetails = ({ customerData }: { customerData?: Customer }) => {
               <Typography variant='h5'>{customerData?.user_name}</Typography>
               <Typography>Customer ID #{customerData?.id}</Typography>
               <Chip
-                label={customerData?.type === 'individual' ? 'individual' : 'Unknown'}
-                color={customerData?.type === 'individual' ? 'primary' : 'default'}
+                label={customerData?.type === 'company' ? 'corporate' : 'Unknown'}
+                color={customerData?.type === 'company' ? 'success' : 'default'}
                 variant='tonal'
                 size='small'
               />
@@ -57,7 +57,9 @@ const CustomerDetails = ({ customerData }: { customerData?: Customer }) => {
                 <i className='tabler-shopping-cart' />
               </CustomAvatar>
               <div>
-                <Typography variant='h5'>{customerData?.orders_count}</Typography>
+                <Typography variant='h5'>
+                  {customerData?.orders_count !== 0 ? customerData?.orders_count : 0}
+                </Typography>
                 <Typography>Orders</Typography>
               </div>
             </div>
@@ -66,7 +68,9 @@ const CustomerDetails = ({ customerData }: { customerData?: Customer }) => {
                 <i className='tabler-currency-dollar' />
               </CustomAvatar>
               <div>
-                <Typography variant='h5'>${customerData?.orders_sum_total_price}</Typography>
+                <Typography variant='h5'>
+                  {customerData?.orders_sum_total_price !== null ? customerData?.orders_sum_total_price : 0}
+                </Typography>
                 <Typography>Spent</Typography>
               </div>
             </div>

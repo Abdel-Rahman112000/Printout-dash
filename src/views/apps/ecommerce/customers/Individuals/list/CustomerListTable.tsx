@@ -221,7 +221,8 @@ const CustomerListTable = ({ customerData }: { customerData?: Customer[] }) => {
         header: 'Total Spent',
         cell: ({ row }) => (
           <Typography className='font-medium' color='text.primary'>
-            ${row.original.orders_sum_total_price}
+            EGP
+            {row.original.orders_sum_total_price === null ? '0' : row.original.orders_sum_total_price}{' '}
           </Typography>
         )
       }),
@@ -273,7 +274,24 @@ const CustomerListTable = ({ customerData }: { customerData?: Customer[] }) => {
                   }
                 },
 
-                { text: 'Move to corporates', icon: 'tabler-copy' }
+                {
+                  text: 'Move to corporates',
+                  icon: 'tabler-copy',
+                  menuItemProps: { onClick: () => setData(data?.filter(client => client.id !== row.original.id)) },
+                  handleClick: async () => {
+                    const headers = await getClientAuthHeaders()
+
+                    axios
+                      .post(api`dashboard/clients/${row.original.id}/change-type`, { type: 'company' }, { headers })
+                      .then(() => {
+                        refetch()
+                        toast.success('Customer changed to corporates successfully!')
+                      })
+                      .catch(() => {
+                        toast.error('An unexpected error occurred. Please try again later.')
+                      })
+                  }
+                }
               ]}
             />
           </div>
@@ -313,20 +331,6 @@ const CustomerListTable = ({ customerData }: { customerData?: Customer[] }) => {
     getFacetedUniqueValues: getFacetedUniqueValues(),
     getFacetedMinMaxValues: getFacetedMinMaxValues()
   })
-
-  // const getAvatar = (params: Pick<Customer, 'avatar' | 'customer'>) => {
-  //   const { avatar, customer } = params
-
-  //   if (avatar) {
-  //     return <CustomAvatar src={avatar} skin='light' size={34} />
-  //   } else {
-  //     return (
-  //       <CustomAvatar skin='light' size={34}>
-  //         {getInitials(customer as string)}
-  //       </CustomAvatar>
-  //     )
-  //   }
-  // }
 
   return (
     <>

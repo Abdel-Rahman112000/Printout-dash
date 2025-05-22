@@ -2,13 +2,13 @@ import Grid from '@mui/material/Grid'
 
 // Types Imports
 import type { CardStatsCustomerStatsProps } from '@/types/pages/widgetTypes'
-import CustomerStatsIndiviuals from './CustomerStatsIndiviuals'
 import type { Customer } from '@/types/apps/ecommerceTypes'
+import CustomerStatsCorporate from './CustomerStatsCorporate'
 
 // Component Imports
 // import CustomerStats from '@components/card-statistics/CustomerStats'
 
-const CustomerStatisticsCard = ({
+const CustomerStatisticsCardCorporate = ({
   customerStatData,
   customerData
 }: {
@@ -20,10 +20,10 @@ const CustomerStatisticsCard = ({
   return (
     <Grid container spacing={6}>
       <Grid item xs={12} md={6}>
-        <CustomerStatsIndiviuals customerData={customerData} />
+        <CustomerStatsCorporate customerData={customerData} />
       </Grid>
     </Grid>
   )
 }
 
-export default CustomerStatisticsCard
+export default CustomerStatisticsCardCorporate

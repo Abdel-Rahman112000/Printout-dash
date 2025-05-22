@@ -47,6 +47,7 @@ import type { Customer } from '@/types/apps/ecommerceTypes'
 import type { Locale } from '@configs/i18n'
 
 // Component Imports
+import AddCustomerDrawer from './AddCustomerDrawer'
 import CustomAvatar from '@core/components/mui/Avatar'
 import CustomTextField from '@core/components/mui/TextField'
 import TablePaginationComponent from '@components/TablePaginationComponent'
@@ -62,7 +63,6 @@ import type { Clients, GetClientsRoot } from '@/types/api/common/Clients'
 import { getClientAuthHeaders } from '@/utils/headers/authClient'
 import { api } from '@/utils/api'
 import { useClientsCorporates } from '@/utils/api/Customers/getCustomersCorporates'
-import AddCustomerDrawer from './AddCustomerDrawer'
 
 declare module '@tanstack/table-core' {
   interface FilterFns {
@@ -198,7 +198,7 @@ const CustomerListTable = ({ customerData }: { customerData?: Customer[] }) => {
                 component={Link}
                 color='text.primary'
                 href={getLocalizedUrl(
-                  `/apps/ecommerce/customers/Individuals/details/${row.original.id}`,
+                  `/apps/ecommerce/customers/corporates/details/${row.original.id}`,
                   locale as Locale
                 )}
                 className='font-medium hover:text-primary'
@@ -222,7 +222,8 @@ const CustomerListTable = ({ customerData }: { customerData?: Customer[] }) => {
         header: 'Total Spent',
         cell: ({ row }) => (
           <Typography className='font-medium' color='text.primary'>
-            ${row.original.orders_sum_total_price}
+            EGP
+            {row.original.orders_sum_total_price === null ? '0' : row.original.orders_sum_total_price}
           </Typography>
         )
       }),
@@ -258,7 +259,7 @@ const CustomerListTable = ({ customerData }: { customerData?: Customer[] }) => {
                 {
                   text: 'Deactivate Customer',
                   icon: 'tabler-download',
-                  menuItemProps: { onClick: () => setData(data?.filter(product => product.id !== row.original.id)) },
+                  menuItemProps: { onClick: () => setData(data?.filter(client => client.id !== row.original.id)) },
                   handleClick: async () => {
                     const headers = await getClientAuthHeaders()
 
@@ -274,7 +275,24 @@ const CustomerListTable = ({ customerData }: { customerData?: Customer[] }) => {
                   }
                 },
 
-                { text: 'Move to corporates', icon: 'tabler-copy' }
+                {
+                  text: 'Move to individual',
+                  icon: 'tabler-copy',
+                  menuItemProps: { onClick: () => setData(data?.filter(client => client.id !== row.original.id)) },
+                  handleClick: async () => {
+                    const headers = await getClientAuthHeaders()
+
+                    axios
+                      .post(api`dashboard/clients/${row.original.id}/change-type`, { type: 'individual' }, { headers })
+                      .then(() => {
+                        refetch()
+                        toast.success('Customer changed to individual successfully!')
+                      })
+                      .catch(() => {
+                        toast.error('An unexpected error occurred. Please try again later.')
+                      })
+                  }
+                }
               ]}
             />
           </div>
