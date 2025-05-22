@@ -32,7 +32,7 @@ const CustomerDetailHeader = ({ customerId }: { customerId: string }) => {
       />
       <OpenDialogOnElementClick
         element={Button}
-        elementProps={buttonProps('Deactivate', 'error', 'tonal')}
+        elementProps={buttonProps('Deactivateasdsadasd', 'error', 'tonal')}
         dialog={ConfirmationDialog}
         dialogProps={{ type: 'delete-customer' }}
       />
