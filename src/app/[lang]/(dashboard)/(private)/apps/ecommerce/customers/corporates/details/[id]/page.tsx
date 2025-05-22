@@ -10,6 +10,8 @@ import CustomerDetails from '@/views/apps/ecommerce/customers/corporates/details
 
 // Data Imports
 import { getEcommerceData } from '@/app/server/actions'
+import { getServerAuthHeaders } from '@/utils/headers/authServer'
+import { getCustomersCorporates } from '@/utils/api/Customers/getCustomersCorporates'
 
 /**
  * ! If you need data using an API call, uncomment the below API code, update the `process.env.API_URL` variable in the
@@ -30,16 +32,21 @@ import { getEcommerceData } from '@/app/server/actions'
 } */
 
 const CustomerDetailsPage = async ({ params }: { params: { id: string } }) => {
-  // Vars
-  const data = await getEcommerceData()
+  const headers = await getServerAuthHeaders()
 
-  const filteredData = data?.customerData.find((item: Customer) => item.id.toString() === params.id)
+  const clients = await getCustomersCorporates(headers)
 
-  // if (!filteredData) {
-  //   redirect('/not-found')
-  // }
+  if (!clients) {
+    redirect('/not-found')
+  }
 
-  return filteredData ? <CustomerDetails customerData={filteredData} /> : null
+  const customer = clients.find(client => String(client.id) === params.id) as Customer | undefined
+
+  if (!customer) {
+    redirect('/not-found')
+  }
+
+  return <CustomerDetails customerData={customer} customerId={params.id} />
 }
 
 export default CustomerDetailsPage

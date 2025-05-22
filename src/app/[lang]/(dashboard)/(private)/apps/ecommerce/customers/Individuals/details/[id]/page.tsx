@@ -31,21 +31,20 @@ import { getServerAuthHeaders } from '@/utils/headers/authServer'
 } */
 
 const CustomerDetailsPage = async ({ params }: { params: { id: string } }) => {
-  // ❶ الهيدرز المطلوبة للمصادقة
   const headers = await getServerAuthHeaders()
 
-  // ❷ كل العملاء
-  const clients = await getClients(headers) // النوع Clients[]
+  const clients = await getClients(headers)
 
-  // ❸ ابحث عن العميل اللي الـ id بتاعه يطابق param
+  if (!clients) {
+    redirect('/not-found')
+  }
+
   const customer = clients.find(client => String(client.id) === params.id) as Customer | undefined
 
-  // ❹ لو مش موجود ▸ حوِّل لصفحة not‑found
   if (!customer) {
     redirect('/not-found')
   }
 
-  // ❺ مرِّر العنصر الفردي للمكوِّن
   return <CustomerDetails customerData={customer} customerId={params.id} />
 }
 

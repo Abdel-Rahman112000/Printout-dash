@@ -1,263 +1,283 @@
-// // React Imports
-// import { useState } from 'react'
+// React Imports
+import { useState } from 'react'
 
-// // MUI Imports
-// import Button from '@mui/material/Button'
-// import Drawer from '@mui/material/Drawer'
-// import Divider from '@mui/material/Divider'
-// import IconButton from '@mui/material/IconButton'
-// import MenuItem from '@mui/material/MenuItem'
-// import Switch from '@mui/material/Switch'
-// import Typography from '@mui/material/Typography'
+// MUI Imports
+import Button from '@mui/material/Button'
+import Drawer from '@mui/material/Drawer'
+import Divider from '@mui/material/Divider'
+import IconButton from '@mui/material/IconButton'
+import Typography from '@mui/material/Typography'
 
-// // Third-party Imports
-// import PerfectScrollbar from 'react-perfect-scrollbar'
-// import { useForm, Controller } from 'react-hook-form'
+// Third-party Imports
+import PerfectScrollbar from 'react-perfect-scrollbar'
+import { useForm, Controller } from 'react-hook-form'
 
-// // Type Imports
-// import type { Customer } from '@/types/apps/ecommerceTypes'
+// Type Imports
+import { toast } from 'react-toastify'
 
-// // Component Imports
-// import CustomTextField from '@core/components/mui/TextField'
+import { useQueryClient } from '@tanstack/react-query'
 
-// type Props = {
-//   open: boolean
-//   handleClose: () => void
-//   setData: (data: Customer[]) => void
-//   customerData?: Customer[]
-// }
+import type { Customer } from '@/types/apps/ecommerceTypes'
 
-// type FormValidateType = {
-//   fullName: string
-//   email: string
-//   country: string
-// }
+// Component Imports
+import CustomTextField from '@core/components/mui/TextField'
+import useCreateNewClient from '@/utils/api/Customers/postNewCustomers'
+import { getClientAuthHeaders } from '@/utils/headers/authClient'
 
-// type FormNonValidateType = {
-//   contact: string
-//   address1: string
-//   address2: string
-//   town: string
-//   state: string
-//   postcode: string
-// }
+type Props = {
+  open: boolean
+  handleClose: () => void
+  setData: (data: Customer[]) => void
+  customerData?: Customer[]
+}
 
-// type countryType = {
-//   country: string
-// }
+export type FormValidateType = {
+  user_name: string
+  email: string
+  company_name: string
+  commerce_registration: string
+  password: string
+  tax: string
+  phone: string
+  type: string
+}
 
-// export const country: { [key: string]: countryType } = {
-//   india: { country: 'India' },
-//   australia: { country: 'Australia' },
-//   france: { country: 'France' },
-//   brazil: { country: 'Brazil' },
-//   us: { country: 'United States' },
-//   china: { country: 'China' }
-// }
+type FormNonValidateType = {
+  phone: string
+  company_name: string
+  commerce_registration: string
+  password: string
+  tax: string
+}
 
-// // Vars
-// const initialData = {
-//   contact: '',
-//   address1: '',
-//   address2: '',
-//   town: '',
-//   state: '',
-//   postcode: ''
-// }
+const initialData: FormNonValidateType = {
+  phone: '',
+  company_name: '',
+  commerce_registration: '',
+  password: '',
+  tax: ''
+}
 
-// const AddCustomerDrawer = (props: Props) => {
-//   // Props
-//   const { open, handleClose, setData, customerData } = props
+const AddCustomerDrawer = (props: Props) => {
+  const { open, handleClose } = props
 
-//   // States
-//   const [formData, setFormData] = useState<FormNonValidateType>(initialData)
+  const [formData, setFormData] = useState<FormNonValidateType>(initialData)
 
-//   // Hooks
-//   const {
-//     control,
-//     reset: resetForm,
-//     handleSubmit,
-//     formState: { errors }
-//   } = useForm<FormValidateType>({
-//     defaultValues: {
-//       fullName: '',
-//       email: '',
-//       country: ''
-//     }
-//   })
+  const {
+    control,
+    reset: resetForm,
+    handleSubmit,
 
-//   const onSubmit = (data: FormValidateType) => {
-//     const newData: Customer = {
-//       id: (customerData?.length && customerData?.length + 1) || 1,
-//       customer: data.fullName,
-//       customerId: customerData?.[Math.floor(Math.random() * 100) + 1].customerId ?? '1',
-//       email: data.email,
-//       country: `${country[data.country].country}`,
-//       countryCode: 'st',
-//       countryFlag: `/images/cards/${data.country}.png`,
-//       order: Math.floor(Math.random() * 1000) + 1,
-//       totalSpent: Math.floor(Math.random() * (1000000 - 100) + 100) / 100,
-//       avatar: `/images/avatars/${Math.floor(Math.random() * 8) + 1}.png`
-//     }
+    formState: { errors }
+  } = useForm<FormValidateType>({
+    defaultValues: {
+      user_name: '',
+      email: '',
+      phone: '',
+      company_name: '',
+      commerce_registration: '',
+      password: '',
+      tax: ''
+    }
+  })
 
-//     setData([...(customerData ?? []), newData])
-//     resetForm({ fullName: '', email: '', country: '' })
-//     setFormData(initialData)
-//     handleClose()
-//   }
+  const { mutate: mutateCreateNewClient } = useCreateNewClient()
+  const queryClient = useQueryClient()
 
-//   const handleReset = () => {
-//     handleClose()
-//     resetForm({ fullName: '', email: '', country: '' })
-//     setFormData(initialData)
-//   }
+  const onSubmit = async (data: FormValidateType) => {
+    const headers = await getClientAuthHeaders()
 
-//   return (
-//     <Drawer
-//       open={open}
-//       anchor='right'
-//       variant='temporary'
-//       onClose={handleReset}
-//       ModalProps={{ keepMounted: true }}
-//       sx={{ '& .MuiDrawer-paper': { width: { xs: 300, sm: 400 } } }}
-//     >
-//       <div className='flex items-center justify-between pli-6 plb-5'>
-//         <Typography variant='h5'>Add a Customer</Typography>
-//         <IconButton size='small' onClick={handleReset}>
-//           <i className='tabler-x text-2xl' />
-//         </IconButton>
-//       </div>
-//       <Divider />
-//       <PerfectScrollbar options={{ wheelPropagation: false, suppressScrollX: true }}>
-//         <div className='p-6'>
-//           <form onSubmit={handleSubmit(data => onSubmit(data))} className='flex flex-col gap-5'>
-//             <Typography color='text.primary' className='font-medium'>
-//               Basic Information
-//             </Typography>
-//             <Controller
-//               name='fullName'
-//               control={control}
-//               rules={{ required: true }}
-//               render={({ field }) => (
-//                 <CustomTextField
-//                   {...field}
-//                   fullWidth
-//                   label='Name'
-//                   placeholder='John Doe'
-//                   {...(errors.fullName && { error: true, helperText: 'This field is required.' })}
-//                 />
-//               )}
-//             />
-//             <Controller
-//               name='email'
-//               control={control}
-//               rules={{ required: true }}
-//               render={({ field }) => (
-//                 <CustomTextField
-//                   {...field}
-//                   fullWidth
-//                   type='email'
-//                   label='Email'
-//                   placeholder='johndoe@gmail.com'
-//                   {...(errors.email && { error: true, helperText: 'This field is required.' })}
-//                 />
-//               )}
-//             />
-//             <Controller
-//               name='country'
-//               control={control}
-//               rules={{ required: true }}
-//               render={({ field }) => (
-//                 <CustomTextField
-//                   select
-//                   fullWidth
-//                   id='country'
-//                   label='Country'
-//                   {...field}
-//                   {...(errors.country && { error: true, helperText: 'This field is required.' })}
-//                 >
-//                   <MenuItem value='india'>India</MenuItem>
-//                   <MenuItem value='australia'>Australia</MenuItem>
-//                   <MenuItem value='france'>France</MenuItem>
-//                   <MenuItem value='brazil'>Brazil</MenuItem>
-//                   <MenuItem value='us'>USA</MenuItem>
-//                   <MenuItem value='china'>China</MenuItem>
-//                 </CustomTextField>
-//               )}
-//             />
-//             <Typography color='text.primary' className='font-medium'>
-//               Shipping Information
-//             </Typography>
-//             <CustomTextField
-//               fullWidth
-//               label='Address Line 1'
-//               name='address1'
-//               placeholder='45 Roker Terrace'
-//               value={formData.address1}
-//               onChange={e => setFormData({ ...formData, address1: e.target.value })}
-//             />
-//             <CustomTextField
-//               fullWidth
-//               label='Address Line 2'
-//               name='address2'
-//               placeholder='Street 69'
-//               value={formData.address2}
-//               onChange={e => setFormData({ ...formData, address2: e.target.value })}
-//             />
-//             <CustomTextField
-//               fullWidth
-//               label='Town'
-//               name='town'
-//               placeholder='New York'
-//               value={formData.town}
-//               onChange={e => setFormData({ ...formData, town: e.target.value })}
-//             />
-//             <CustomTextField
-//               fullWidth
-//               label='State/Province'
-//               name='state'
-//               placeholder='Southern tip'
-//               value={formData.state}
-//               onChange={e => setFormData({ ...formData, state: e.target.value })}
-//             />
-//             <CustomTextField
-//               fullWidth
-//               label='Post Code'
-//               name='postcode'
-//               placeholder='734990'
-//               value={formData.postcode}
-//               onChange={e => setFormData({ ...formData, postcode: e.target.value })}
-//             />
-//             <CustomTextField
-//               label='Mobile'
-//               type='number'
-//               fullWidth
-//               placeholder='+(123) 456-7890'
-//               value={formData.contact}
-//               onChange={e => setFormData({ ...formData, contact: e.target.value })}
-//             />
-//             <div className='flex justify-between'>
-//               <div className='flex flex-col items-start gap-1'>
-//                 <Typography color='text.primary' className='font-medium'>
-//                   Use as a billing address?
-//                 </Typography>
-//                 <Typography variant='body2'>Please check budget for more info.</Typography>
-//               </div>
-//               <Switch defaultChecked />
-//             </div>
-//             <div className='flex items-center gap-4'>
-//               <Button variant='contained' type='submit'>
-//                 Add
-//               </Button>
-//               <Button variant='tonal' color='error' type='reset' onClick={handleReset}>
-//                 Discard
-//               </Button>
-//             </div>
-//           </form>
-//         </div>
-//       </PerfectScrollbar>
-//     </Drawer>
-//   )
-// }
+    const createNewClients = {
+      user_name: data?.user_name,
+      email: data?.email,
+      phone: data?.phone,
+      company_name: data?.company_name,
+      commerce_registration: data?.commerce_registration,
+      password: data?.password,
+      type: data?.type,
+      tax: data?.tax
+    }
 
-// export default AddCustomerDrawer
+    mutateCreateNewClient(
+      { headers: headers, payload: createNewClients },
+      {
+        onSuccess: (res: any) => {
+          queryClient.invalidateQueries({ queryKey: ['clients'] })
+          resetForm()
+          setFormData(initialData)
+          handleClose()
+          // window.location.reload()
+          toast.success(res?.message || 'Customer added successfully')
+        },
+        onError: (err: any) => {
+          toast.error(err?.response?.data?.message || 'Something went wrong')
+        }
+      }
+    )
+  }
+
+  const handleReset = () => {
+    handleClose()
+    resetForm()
+    setFormData(initialData)
+  }
+
+  return (
+    <Drawer
+      open={open}
+      anchor='right'
+      variant='temporary'
+      onClose={handleReset}
+      ModalProps={{ keepMounted: true }}
+      sx={{ '& .MuiDrawer-paper': { width: { xs: 300, sm: 400 } } }}
+    >
+      <div className='flex items-center justify-between pli-6 plb-5'>
+        <Typography variant='h5'>Add a Customer</Typography>
+        <IconButton size='small' onClick={handleReset}>
+          <i className='tabler-x text-2xl' />
+        </IconButton>
+      </div>
+      <Divider />
+      <PerfectScrollbar options={{ wheelPropagation: false, suppressScrollX: true }}>
+        <div className='p-6'>
+          <form onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-5'>
+            <Typography color='text.primary' className='font-medium'>
+              Basic Information
+            </Typography>
+
+            <Controller
+              name='user_name'
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <CustomTextField
+                  {...field}
+                  fullWidth
+                  label='Name'
+                  placeholder='John Doe'
+                  {...(errors.user_name && { error: true, helperText: 'This field is required.' })}
+                />
+              )}
+            />
+            <Controller
+              name='email'
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <CustomTextField
+                  {...field}
+                  fullWidth
+                  type='email'
+                  label='Email'
+                  placeholder='johndoe@gmail.com'
+                  {...(errors.email && { error: true, helperText: 'This field is required.' })}
+                />
+              )}
+            />
+
+            <Controller
+              name='phone'
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <CustomTextField
+                  {...field}
+                  fullWidth
+                  label='Phone'
+                  placeholder='+(123) 456-7890'
+                  {...(errors.phone && { error: true, helperText: 'This field is required.' })}
+                />
+              )}
+            />
+
+            <Controller
+              name='company_name'
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <CustomTextField
+                  {...field}
+                  fullWidth
+                  label='Company Name'
+                  placeholder='Tech Inc.'
+                  {...(errors.company_name && { error: true, helperText: 'This field is required.' })}
+                />
+              )}
+            />
+            <Controller
+              name='commerce_registration'
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <CustomTextField
+                  {...field}
+                  fullWidth
+                  label='Commerce Registration'
+                  placeholder='CR123456'
+                  {...(errors.commerce_registration && { error: true, helperText: 'This field is required.' })}
+                />
+              )}
+            />
+            <Controller
+              name='password'
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <CustomTextField
+                  {...field}
+                  fullWidth
+                  label='Password'
+                  placeholder='******'
+                  type='password'
+                  {...(errors.password && { error: true, helperText: 'This field is required.' })}
+                />
+              )}
+            />
+
+            <Controller
+              name='type'
+              control={control}
+              defaultValue='individual'
+              render={({ field }) => (
+                <CustomTextField
+                  {...field}
+                  fullWidth
+                  label='Type'
+                  placeholder='individual'
+                  InputProps={{
+                    readOnly: true
+                  }}
+                />
+              )}
+            />
+            <Controller
+              name='tax'
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <CustomTextField
+                  {...field}
+                  fullWidth
+                  label='Tax'
+                  placeholder='TAX987654'
+                  {...(errors.tax && { error: true, helperText: 'This field is required.' })}
+                />
+              )}
+            />
+
+            <div className='flex items-center gap-4'>
+              <Button variant='contained' type='submit'>
+                Add
+              </Button>
+              <Button variant='tonal' color='error' type='reset' onClick={handleReset}>
+                Discard
+              </Button>
+            </div>
+          </form>
+        </div>
+      </PerfectScrollbar>
+    </Drawer>
+  )
+}
+
+export default AddCustomerDrawer
