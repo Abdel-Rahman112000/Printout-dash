@@ -59,21 +59,6 @@ export const db: CardStatsType = {
   ],
   customerStats: [
     {
-      color: 'primary',
-      avatarIcon: 'tabler-currency-dollar',
-      title: 'account balance',
-      stats: '$7480',
-      content: ' Credit Left',
-      description: 'Account balance for next purchase'
-    },
-    {
-      color: 'success',
-      avatarIcon: 'tabler-gift',
-      title: 'loyalty program',
-      chipLabel: 'Platinum member',
-      description: '3000 points to next tier'
-    },
-    {
       color: 'warning',
       avatarIcon: 'tabler-star',
       title: 'wishlist',

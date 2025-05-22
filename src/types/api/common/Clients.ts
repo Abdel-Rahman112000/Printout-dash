@@ -1,4 +1,10 @@
-export type Customer = {
+export interface GetClientsRoot {
+  status: boolean
+  message: string
+  data: Clients[]
+}
+
+export interface Clients {
   id: number
   user_name: string
   email: string
@@ -20,11 +26,10 @@ export type Customer = {
   orders_count: number
   orders_sum_total_price: any
   pictures: any[]
-  orders: OrderType[]
   media: Medum[]
+  orders: Order[]
 }
-
-export interface OrderType {
+export interface Order {
   id: number
   total_price: string
   method: string
@@ -72,66 +77,4 @@ export interface Medum {
   updated_at: string
   original_url: string
   preview_url: string
-}
-
-export type ReferralsType = {
-  id: number
-  user: string
-  email: string
-  avatar: string
-  referredId: number
-  status: string
-  value: string
-  earning: string
-}
-
-export type ReviewType = {
-  id: number
-  product: string
-  companyName: string
-  productImage: string
-  reviewer: string
-  email: string
-  avatar: string
-  date: string
-  status: string
-  review: number
-  head: string
-  para: string
-}
-
-export type ProductType = {
-  id: number
-  productName: string
-  category: string
-  stock: boolean
-  sku: number
-  price: string
-  qty: number
-  status: string
-  image: string
-  productBrand: string
-}
-
-// export type OrderType = {
-//   id: number
-//   order: string
-//   customer: string
-//   email: string
-//   avatar: string
-//   payment: number
-//   status: string
-//   spent: number
-//   method: string
-//   date: string
-//   time: string
-//   methodNumber: number
-// }
-
-export type ECommerceType = {
-  products: ProductType[]
-  orderData: OrderType[]
-  customerData: Customer[]
-  reviews: ReviewType[]
-  referrals: ReferralsType[]
 }

@@ -94,7 +94,10 @@ const VerticalMenu = ({ dictionary, scrollMenu }: Props) => {
         renderExpandedMenuItemIcon={{ icon: <i className='tabler-circle text-xs' /> }}
         menuSectionStyles={menuSectionStyles(verticalNavOptions, theme)}
       >
-        <MenuSection label={dictionary['navigation'].appsPages}>
+        {/*  ProductsManagement*/}
+
+        {/* <MenuSection label={dictionary['navigation'].appsPages}> */}
+        <MenuSection label={dictionary['navigation'].ProductsManagement}>
           <SubMenu label={dictionary['navigation'].products}>
             <MenuItem href={`/${locale}/apps/ecommerce/products/list`}>{dictionary['navigation'].list}</MenuItem>
             <MenuItem href={`/${locale}/apps/ecommerce/products/create`}>{dictionary['navigation'].add}</MenuItem>
@@ -102,26 +105,48 @@ const VerticalMenu = ({ dictionary, scrollMenu }: Props) => {
               {dictionary['navigation'].category}
             </MenuItem> */}
           </SubMenu>
-
           {isAdmin && <MenuItem href={`/${locale}/apps/categories`}>{dictionary['navigation'].categories}</MenuItem>}
-          {isAdmin && <MenuItem href={`/${locale}/apps/user/list`}>{dictionary['navigation'].user}</MenuItem>}
-          {isAdmin && <MenuItem href={`/${locale}/apps/tracking-map`}>{dictionary['navigation'].TrackingMAP}</MenuItem>}
-          {isAdmin && <MenuItem href={`/${locale}/apps/vendors`}>{dictionary['navigation'].vendors}</MenuItem>}
-          {isAdmin && <MenuItem href={`/${locale}/apps/roles`}>{dictionary['navigation'].roles}</MenuItem>}
-
-          {!isAdmin && (
-            <MenuItem href={`/${locale}/apps/ecommerce/vendors-products`}>
-              {dictionary['navigation'].vendors_products}
+        </MenuSection>
+        {/*  ProductsManagement*/}
+        {/*  Users Management*/}
+        <MenuSection label={dictionary['navigation'].usersManagement}>
+          <SubMenu label={dictionary['navigation'].customers}>
+            <MenuItem href={`/${locale}/apps/ecommerce/customers/Individuals/list`}>
+              {dictionary['navigation'].individuals}
             </MenuItem>
-          )}
+            <MenuItem href={`/${locale}/apps/ecommerce/customers/corporates/list`}>
+              {dictionary['navigation'].corporates}
+            </MenuItem>
+          </SubMenu>
+          {isAdmin && <MenuItem href={`/${locale}/apps/user/list`}>{dictionary['navigation'].user}</MenuItem>}
+          {isAdmin && <MenuItem href={`/${locale}/apps/vendors`}>{dictionary['navigation'].vendors}</MenuItem>}
+        </MenuSection>
+        {/*  Users Management*/}
+        {/* Order management  */}
+        <MenuSection label={dictionary['navigation'].ordermanagement}>
           <MenuItem href={`/${locale}/apps/ecommerce/orders/list`}>{dictionary['navigation'].orders}</MenuItem>
-
-          {isAdmin && <MenuItem href={`/${locale}/apps/chat`}>{dictionary['navigation'].chat}</MenuItem>}
-          {isAdmin && <MenuItem href={`/${locale}/apps/settings`}>{dictionary['navigation'].settings}</MenuItem>}
           {isAdmin && (
             <MenuItem href={`/${locale}/apps/chat/custom-offer`}>{dictionary['navigation'].MakeOffer}</MenuItem>
           )}
+          {isAdmin && <MenuItem href={`/${locale}/apps/tracking-map`}>{dictionary['navigation'].TrackingMAP}</MenuItem>}
+
+          {isAdmin && <MenuItem href={`/${locale}/apps/chat`}>{dictionary['navigation'].chat}</MenuItem>}
         </MenuSection>
+
+        {/* Order management  */}
+        {/*  General  */}
+        <MenuSection label={dictionary['navigation'].general}>
+          {isAdmin && <MenuItem href={`/${locale}/apps/roles`}>{dictionary['navigation'].roles}</MenuItem>}
+          {isAdmin && <MenuItem href={`/${locale}/apps/settings`}>{dictionary['navigation'].settings}</MenuItem>}
+        </MenuSection>
+
+        {!isAdmin && (
+          <MenuItem href={`/${locale}/apps/ecommerce/vendors-products`}>
+            {dictionary['navigation'].vendors_products}
+          </MenuItem>
+        )}
+
+        {/* </MenuSection> */}
       </Menu>
       {/* <Menu
         popoutMenuOffset={{ mainAxis: 23 }}
